@@ -65,6 +65,26 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
     // Expose assets to PAGE
     config.pageData.datas.push(addAssets(config as WK.ProjectConfig))
+
+    if ("ejs" in config) {
+      const ejs = config["ejs"]
+
+      // Add asset_path() helper
+      ejs.helpers.asset_path = function () {
+        const source_path = this.context.resourcePath
+        return function (path: string, from?: string) {
+          return config.assets.pipeline.resolve.getPath(path, { from: from || source_path })
+        }
+      }
+
+      // Add asset_url() helper
+      ejs.helpers.asset_url = function () {
+        const source_path = this.context.resourcePath
+        return function (path: string, from?: string) {
+          return config.assets.pipeline.resolve.getUrl(path, { from: from || source_path })
+        }
+      }
+    }
   },
 
   webpack(config) {
