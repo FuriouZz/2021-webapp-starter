@@ -58,13 +58,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
     appSource.file.shadow('bundle.js', { tag: 'bundle' })
 
     // Add asset_url/asset_path tranformer
-    config.typescript.visitors.push(transformer)
+    config.typescript.visitors.push(transformer(config as WK.ProjectConfig))
 
     // Expose global tranformers
     config.generate.files.push(typings(config as WK.ProjectConfig))
 
     // Expose assets to PAGE
-    config.pageData.datas.push(addAssets)
+    config.pageData.datas.push(addAssets(config as WK.ProjectConfig))
   },
 
   webpack(config) {

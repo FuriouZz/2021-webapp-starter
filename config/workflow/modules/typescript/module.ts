@@ -7,7 +7,6 @@ export type Options = {
   typescript: {
     build: "default" | "transpile" | "fast",
     visitors: Visitor[]
-    globalTypings: string[]
   }
 }
 
@@ -17,8 +16,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     return {
       typescript: {
         build: "default",
-        visitors: [],
-        globalTypings: []
+        visitors: []
       }
     }
   },

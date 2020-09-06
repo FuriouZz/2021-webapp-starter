@@ -199,12 +199,12 @@ export async function ConfigureModules(items: Record<string, UserConfig>) {
   const _needUpdate = checkLastUpdate()
 
   if (_needUpdate) {
-    console.log("[info] config/tsconfig.json need an update")
+    console.log("[info] config need an update")
     updateTSConfig({ modules, include })
     installDependencies({ deps, devDeps })
     updateTypes(include)
     spawnSync("npx tsc -p config/tsconfig.json", { stdio: "inherit", shell: true })
   } else {
-    console.log("[info] config/tsconfig.json does not need an update")
+    console.log("[info] config does not need an update")
   }
 }
