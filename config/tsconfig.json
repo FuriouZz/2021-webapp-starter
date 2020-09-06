@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "esModuleInterop": true,
+    "rootDir": "./",
+    "outDir": "../tmp",
+    "skipLibCheck": true,
+    "downlevelIteration": true
+  },
+  "exclude": [
+    "modules"
+  ],
+  "include": [
+    "workflow/**/*",
+    "build.ts",
+    "modules/css"
+  ]
+}

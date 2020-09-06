@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "moduleResolution": "node",
+    "module": "esnext",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "lib": [
+      "dom",
+      "ES2015"
+    ],
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "app/scripts/*"
+      ]
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "app/scripts/typings",
+      "app/scripts/generated"
+    ],
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "./tmp",
+    "./config",
+    "./public",
+    "./build"
+  ],
+  "include": [
+    "./app"
+  ]
+}

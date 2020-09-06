@@ -1,0 +1,29 @@
+# Enable watch mode
+watch: false
+
+# Reload page on change
+reload: true
+
+# Enable js/css compress
+compress: false
+
+# Enable cache-break
+cache: false
+
+# Build output
+output: public
+
+# Host prefix (take care to end your path with your slash "/")
+host: ''
+
+# HTTPS
+https: false
+
+modules:
+  i18n:
+    apiKey: ENV['AIRTABLE_API_KEY']
+    tables:
+      i18n:
+        appId: ENV['AIRTABLE_APP_ID']
+        tabs: [ I18n ]
+        view: All
