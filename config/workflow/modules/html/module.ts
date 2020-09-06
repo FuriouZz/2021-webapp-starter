@@ -15,7 +15,7 @@ export const Hooks: WK.ModuleHooks = {
     }
   },
 
-  webpack(config) {
+  onWebpackUpdate(config) {
     config.assets.pipeline.manifest
       .export("asset")
       .filter(asset => asset.tag === "html")

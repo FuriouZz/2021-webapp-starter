@@ -32,13 +32,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules({ pageData }) {
+  onModulesUpdate({ pageData }) {
     pageData.datas.push(async (data, { i18n }) => {
       data["locales"] = i18n.locales
     })
   },
 
-  webpack({ webpack, i18n }) {
+  onWebpackUpdate({ webpack, i18n }) {
     webpack.plugins!.push(new I18nAirtablePlugin(i18n))
   }
 

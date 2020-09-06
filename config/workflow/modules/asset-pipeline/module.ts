@@ -35,7 +35,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules(config) {
+  onModulesUpdate(config) {
     const pipeline = config.assets.pipeline
     const appSource = config.assets.appSource
 
@@ -66,11 +66,9 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Expose assets to PAGE
     config.pageData.datas.push(addAssets(config as WK.ProjectConfig))
 
-    if ("ejs" in config) {
-      const ejs = config["ejs"]
-
+    if (config["ejs"]) {
       // Add asset_path() helper
-      ejs.helpers.asset_path = function () {
+      config["ejs"].helpers.asset_path = function () {
         const source_path = this.context.resourcePath
         return function (path: string, from?: string) {
           return config.assets.pipeline.resolve.getPath(path, { from: from || source_path })
@@ -78,7 +76,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
       }
 
       // Add asset_url() helper
-      ejs.helpers.asset_url = function () {
+      config["ejs"].helpers.asset_url = function () {
         const source_path = this.context.resourcePath
         return function (path: string, from?: string) {
           return config.assets.pipeline.resolve.getUrl(path, { from: from || source_path })
@@ -87,7 +85,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  webpack(config) {
+  onWebpackUpdate(config) {
     config.webpack.module!.rules.push(fileRule(config))
     config.webpack.module!.rules.push(rawRule(config))
     config.webpack.module!.rules.push(mjsRule())

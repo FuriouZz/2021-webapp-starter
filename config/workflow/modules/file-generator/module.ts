@@ -19,7 +19,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  webpack(config) {
+  onWebpackUpdate(config) {
     config.webpack.plugins!.push(new FileGeneratorPlugin(config))
   }
 

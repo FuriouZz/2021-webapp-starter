@@ -21,7 +21,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules({ typescript, ejs }) {
+  onModulesUpdate({ typescript, ejs }) {
     typescript.visitors.push((node, factory) => {
       if (
         (ts.isStringLiteral(node) || ts.isStringTextContainingNode(node))
@@ -36,7 +36,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     })
   },
 
-  webpack({ webpack, ejs, assets, env }) {
+  onWebpackUpdate({ webpack, ejs, assets, env }) {
     // Add .ejs rule
     webpack.module!.rules.unshift({
       test: /\.ejs$/i,

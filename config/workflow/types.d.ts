@@ -23,12 +23,16 @@ export namespace WK {
     webpack: Configuration,
   }
 
-  export type ModuleHooks<T=any> = {
+  export type ModuleHooks<T={}> = {
     options?: () => T,
-    modules?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T> & T) => void,
-    env?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T> & T) => void,
-    assets?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T> & T) => void,
-    webpack?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T  & T| "webpack">) => void,
+    onModulesUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig> & T) => void,
+    afterModulesUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig> & T) => void,
+    onEnvUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig> & T) => void,
+    afterEnvUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig> & T) => void,
+    onAssetsUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig> & T) => void,
+    afterAssetsUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig> & T) => void,
+    onWebpackUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | "webpack"> & T) => void,
+    afterWebpackUpdate?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | "webpack"> & T) => void,
   }
 
 }

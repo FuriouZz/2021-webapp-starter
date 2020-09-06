@@ -5,7 +5,7 @@ export type Options = {}
 
 export const Hooks: WK.ModuleHooks<Options> = {
 
-  webpack(config) {
+  onWebpackUpdate(config) {
     const { webpack, assets } = config
 
     webpack.plugins.push(new ExtractCssChunks({

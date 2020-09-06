@@ -21,7 +21,8 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
     Hooks.call("options", project)
 
     // Update modules options
-    Hooks.call("modules", project)
+    Hooks.call("onModulesUpdate", project)
+    Hooks.call("afterModulesUpdate", project)
 
     /**
      * Merge environment options
@@ -45,10 +46,12 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
     } as WK.EnvConfig, cliEnv)
 
     // Update env
-    Hooks.call("env", project)
+    Hooks.call("onEnvUpdate", project)
+    Hooks.call("afterEnvUpdate", project)
 
     // Update assets
-    Hooks.call("assets", project)
+    Hooks.call("onAssetsUpdate", project)
+    Hooks.call("afterAssetsUpdate", project)
 
     // Fetch assets
     project.assets.pipeline.fetch(true)
@@ -58,7 +61,8 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
     const webpack = project.webpack = Webpack(project)
 
     // Update webpack
-    Hooks.call("webpack", project)
+    Hooks.call("onWebpackUpdate", project)
+    Hooks.call("afterWebpackUpdate", project)
     // console.log(JSON.stringify(webpack.module.rules, null, 2));
 
     return webpack

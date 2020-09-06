@@ -11,10 +11,14 @@ export class Hooks {
   }
 
   static call(key: "options", options: WK.ModuleConfig): void
-  static call(key: "modules", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
-  static call(key: "env", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
-  static call(key: "assets", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
-  static call(key: "webpack", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig | "webpack">): void
+  static call(key: "onModulesUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
+  static call(key: "afterModulesUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
+  static call(key: "onEnvUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
+  static call(key: "afterEnvUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
+  static call(key: "onAssetsUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
+  static call(key: "afterAssetsUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig>): void
+  static call(key: "onWebpackUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig | "webpack">): void
+  static call(key: "afterWebpackUpdate", config: Pick<WK.ProjectConfig, "env" | keyof WK.ModuleConfig | "webpack">): void
   static call(key: keyof WK.ModuleHooks, arg0: any): any {
     for (const m of Hooks._hooks) {
       if (key in m) {
