@@ -1,6 +1,6 @@
 import { WK } from "../../types"
 
-export type PageDataFunction = (data: Record<string, any>, config: WK.ProjectConfig) => Promise<void>
+export type PageDataFunction = (data: Record<string, any>) => Promise<void>
 
 export type Options = {
   pageData: {
@@ -29,7 +29,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
         const fetchs = options.datas
 
         for (const fetch of fetchs) {
-          const res = fetch(data, config as WK.ProjectConfig)
+          const res = fetch(data)
           if ("then" in res) await res
         }
 

@@ -2,7 +2,11 @@
 
 - [Architecture](#architecture)
 - [Configure you build](#configure-you-build)
-- [`typescript` module](#typescript-module)
+- [`typescript` module (default module)](#typescript-module-default-module)
+- [`asset-pipeline` module (default module)](#asset-pipeline-module-default-module)
+- [`file-generator` module (default module)](#file-generator-module-default-module)
+- [`page-data` module (default module)](#page-data-module-default-module)
+- [`html` module (default module)](#html-module-default-module)
 - [`ejs` module](#ejs-module)
   - [Default `helpers`](#default-helpers)
   - [Create a layout](#create-a-layout)
@@ -17,11 +21,13 @@
 * `app/**/*` all your assets and entries for your website
 * `tsconfig.json` for app/
 * `config/build.ts` configure build configuration
-* `config/config.ts` enable/disable modules
+* `config/modules.ts` enable/disable modules
 * `config/tsconfig.json` for `./config` (Updated automatically at each module activation)
 * `config/workflow` Main configuration code
 * `config/modules` Custom modules
-* `config/modules/index.ts` Custom modules typings and imports (Updated automatically at each module activation)
+* `config/modules/modules.ts` Custom modules typings and imports (Updated automatically at each module activation)
+* `config/workflow/modules` Default modules
+* `config/workflow/modules/modules.ts` Default modules typings and imports
 * `.env` ini file for your environment variable (git ignored)
 * `package.json` (Updated automatically at each module activation)
 
@@ -73,11 +79,11 @@ export default CreateWebpackConfig({
 
     // Views
     const views = pipeline.source.add("app/views")
-    views.file.ignore(`**/_*.html.ejs`) // Ignore partials
-    views.file.add("**/*.html.ejs", {
-      output: { ext: "" },
+    views.file.ignore(`**/_*.ejs`) // Ignore partials
+    views.file.add("**/*.ejs", {
+      output: { ext: ".html" },
       cache: false,
-      tag: 'entry' // Required for file emission
+      tag: 'html'
     })
 
     // Assets
@@ -90,9 +96,6 @@ export default CreateWebpackConfig({
       } : false,
       tag: "asset",
     })
-
-    // Add copy rule
-    assets.fs.copy('**/*')
   },
 
   // You can override webpack configuration
@@ -103,22 +106,9 @@ export default CreateWebpackConfig({
 })
 ```
 
-## `typescript` module
+## `typescript` module (default module)
 
 This module enables you compile `js/ts` files.
-
-Go to `config/config.ts` and add these lines:
-
-```ts
-  "ejs": {
-    enabled: true,
-    path: "modules/typescript",
-    devDependencies: {
-      "ts-loader": "8.0.3",
-      "fork-ts-checker-webpack-plugin": "^5.1.0",
-    }
-  },
-```
 
 Options available:
 
@@ -140,24 +130,325 @@ type Options = {
 type Visitor = (node: ts.Node, config: WK.ProjectConfig, factory: ts.NodeFactory) => ts.Node | undefined
 ```
 
-Example:
+Example from `asset-pipeline` module:
 
 ```ts
-  if ("typescript" in modules) {
-    const reg = /^@ejs:/
-    // @ts-ignore
-    modules.typescript.visitors.push((node, config, factory) => {
-      if (
-        (ts.isStringLiteral(node) || ts.isStringTextContainingNode(node))
-        && reg.test(node.text)
-      ) {
-        let content = node.text.replace(reg, "").trim()
-        content = render_template(`<%= ${content} %>`, config.modules.ejs)
-        return factory.createStringLiteral(content, false)
+// ...
+
+  modules({ typescript, ejs, assets }) {
+    typescript.visitors.push((node, factory) => {
+      if (ts.isCallExpression(node) && /asset_(url|path)/.test(node.expression.getText()) && node.arguments.length === 1) {
+        const { pipeline } = assets
+        const arg0 = node.arguments[0]
+
+        // StringLiteral = "flags.png" | 'flags.png' (accepted)
+        // NoSubstitutionTemplateLiteral = `flags.png` (accepted)
+        // TemplateLiteral = `flags.${extension}` (rejected)
+        // BinaryExpression = "flags" + extension | 'flags' + extension | `flags` + extension (rejected)
+        const isStringLiteral = ts.isStringLiteral(arg0) || ts.isNoSubstitutionTemplateLiteral(arg0)
+        if (!isStringLiteral) return node
+
+        let path = (arg0 as ts.StringLiteral | ts.NoSubstitutionTemplateLiteral).text.trim()
+        const fileName = node.getSourceFile().fileName
+
+        // Check if the asset exist in asset-pipeline
+        const asset = pipeline.manifest.get(path)
+
+        // If the asset does not exist, return given path
+        if (!asset) return ts.createStringLiteral(path)
+        const source = pipeline.source.get(asset.source.uuid)
+
+        // If the source does not exist, return given path
+        if (!source) return ts.createStringLiteral(path)
+
+        // Else replace asset_path()/asset_url() by require() and file-loader do the rest
+        path = relative(dirname(fileName), source.fullpath.join(path).raw())
+        const id = factory.createIdentifier("require")
+        const lit = ts.createStringLiteral(path)
+        return factory.createCallExpression(id, [], [lit])
+      }
+
+      return node
+    })
+  }
+
+// ...
+```
+
+Now this code :
+
+`main.ts`
+```ts
+const target = "@ejs: env.target";
+```
+
+will render this one
+
+`main.js`
+```ts
+const target = "development";
+```
+
+## `asset-pipeline` module (default module)
+
+Options available:
+
+```ts
+type Options = {
+  assets: {
+    pipeline: Pipeline,
+    appSource: Source,
+    rules: {
+      file: RuleSetConditions,
+      raw: RuleSetConditions,
+    }
+  }
+}
+
+type RuleSetConditions = string | RegExp | ((path: string) => boolean)
+```
+
+## `file-generator` module (default module)
+
+This module generate files. By default the `output` is `scripts/generated`.
+
+Options available:
+
+```ts
+type Options = {
+  generate: {
+    output: string,
+    files: FileData[]
+  }
+}
+
+type FileData = {
+  filename: string,
+  content: () => Promise<string> | string
+}
+```
+
+Example from `asset-pipeline` module:
+
+```ts
+// ...
+
+  modules(config) {
+    config.generate.files.push({
+      filename: "assets.d.ts",
+      content() {
+        let content = ""
+        content += `import { PAGE } from "./${basename(config.pageData.filename, extname(config.pageData.filename))}"\n`
+        content += `declare global {\n`
+        content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
+        content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
+        content += `}\n`
+        return content
       }
     })
   }
+
+// ...
 ```
+
+## `page-data` module (default module)
+
+This module append data to `PAGE` variable. This module works with `file-generator` to create `scripts/generated/PAGE.ts`.
+
+Options available:
+
+```ts
+type Options = {
+  pageData: {
+    filename: string,
+    datas: PageDataFunction[]
+  }
+}
+
+type PageDataFunction = (data: Record<string, any>, config: WK.ProjectConfig) => Promise<void>
+```
+
+Example from `asset-pipeline` module :
+
+```ts
+// ...
+
+  modules({ assets }) {
+    config.pageData.datas.push(async (data) => {
+      assets.pipeline.fetch(true)
+      const entries = Object.entries(assets.pipeline.manifest.export("output_key"))
+      const outputs: Record<string, { path: string, url: string }> = {}
+      for (const [key, value] of entries) {
+        outputs[key] = value.output
+      }
+      data["assets"] = outputs
+    })
+  }
+
+// ...
+```
+
+## `html` module (default module)
+
+This module handles every entry with `tag: "html"`. It takes care to inject scripts and styles for you and a couple more things. If you want to resolve URLs, replace your `.html` file to `.ejs` file and `<%= asset_path(key) %>` or `<%= asset_url(key) %>`.
+
+Options available:
+
+```ts
+type Options = {
+  html: {
+    configure?: (input: string, options: HTMLWebpackPluginOptions) => HTMLWebpackPluginOptions
+  }
+}
+
+type HTMLWebpackPluginOptions ={
+  /**
+   * Emit the file only if it was changed.
+   * @default true
+   */
+  cache: boolean;
+  /**
+   * List all entries which should be injected
+   */
+  chunks: "all" | string[];
+  /**
+   * Allows to control how chunks should be sorted before they are included to the html.
+   * @default 'auto'
+   */
+  chunksSortMode:
+    | "auto"
+    | "manual"
+    | (((entryNameA: string, entryNameB: string) => number));
+  /**
+   * List all entries which should not be injected
+   */
+  excludeChunks: string[];
+  /**
+   * Path to the favicon icon
+   */
+  favicon: false | string;
+  /**
+   * The file to write the HTML to.
+   * Supports subdirectories eg: `assets/admin.html`
+   * @default 'index.html'
+   */
+  filename: string;
+  /**
+   * If `true` then append a unique `webpack` compilation hash to all included scripts and CSS files.
+   * This is useful for cache busting
+   */
+  hash: boolean;
+  /**
+   * Inject all assets into the given `template` or `templateContent`.
+   */
+  inject:
+    | false // Don't inject scripts
+    | true // Inject scripts into body
+    | "body" // Inject scripts into body
+    | "head" // Inject scripts into head
+  /**
+   * Set up script loading
+   * blocking will result in <script src="..."></script>
+   * defer will result in <script defer src="..."></script>
+   *
+   * @default 'blocking'
+   */
+  scriptLoading:
+    | "blocking"
+    | "defer"
+  /**
+   * Inject meta tags
+   */
+  meta:
+    | false // Disable injection
+    | {
+        [name: string]:
+          | string
+          | false // name content pair e.g. {viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'}`
+          | { [attributeName: string]: string | boolean }; // custom properties e.g. { name:"viewport" content:"width=500, initial-scale=1" }
+      };
+  /**
+   * HTML Minification options accepts the following values:
+   * - Set to `false` to disable minifcation
+   * - Set to `'auto'` to enable minifcation only for production mode
+   * - Set to custom minification according to
+   * {@link https://github.com/kangax/html-minifier#options-quick-reference}
+   */
+  minify: 'auto' | boolean | MinifyOptions;
+  /**
+   * Render errors into the HTML page
+   */
+  showErrors: boolean;
+  /**
+   * The `webpack` require path to the template.
+   * @see https://github.com/jantimon/html-webpack-plugin/blob/master/docs/template-option.md
+   */
+  template: string;
+  /**
+   * Allow to use a html string instead of reading from a file
+   */
+  templateContent:
+    | false // Use the template option instead to load a file
+    | string
+    | ((templateParameters: { [option: string]: any }) => (string | Promise<string>))
+    | Promise<string>;
+  /**
+   * Allows to overwrite the parameters used in the template
+   */
+  templateParameters:
+    | false // Pass an empty object to the template function
+    | ((
+        compilation: any,
+        assets: {
+          publicPath: string;
+          js: Array<string>;
+          css: Array<string>;
+          manifest?: string;
+          favicon?: string;
+        },
+        assetTags: {
+          headTags: HtmlTagObject[];
+          bodyTags: HtmlTagObject[];
+        },
+        options: ProcessedOptions
+      ) => { [option: string]: any } | Promise<{ [option: string]: any }>)
+    | { [option: string]: any };
+  /**
+   * The title to use for the generated HTML document
+   */
+  title: string;
+  /**
+   * Enforce self closing tags e.g. <link />
+   */
+  xhtml: boolean;
+  /**
+   * In addition to the options actually used by this plugin, you can use this hash to pass arbitrary data through
+   * to your template.
+   */
+  [option: string]: any;
+}
+```
+
+Example from `asset-pipeline` module :
+
+```ts
+// ...
+
+  modules({ assets }) {
+    config.pageData.datas.push(async (data) => {
+      assets.pipeline.fetch(true)
+      const entries = Object.entries(assets.pipeline.manifest.export("output_key"))
+      const outputs: Record<string, { path: string, url: string }> = {}
+      for (const [key, value] of entries) {
+        outputs[key] = value.output
+      }
+      data["assets"] = outputs
+    })
+  }
+
+// ...
+```
+
 
 ## `ejs` module
 
@@ -197,7 +488,7 @@ Three helpers are included:
 * `<%= asset_url("myasset.jpg") %>` print asset url if `host` is given (eg.: "https://mywebsite.com/assets/myassets.jpg")
 * `<%= include("myasset.svg") %>` print the content of the file
 
-More example with `include`
+Example with `include`
 
 ```html
 <!-- layout.html.ejs -->
@@ -268,13 +559,12 @@ If I set `env.target = "release"` in my build config
 const target = "release"
 ```
 
-By default, these `env` and `page` are exposed:
+By default, these `env` is exposed:
 
 ```ts
 const target = "@ejs: env.target"
 const host = "@ejs: env.host"
 const env = JSON.parse("@ejs: env")
-const assets = JSON.parse("@ejs: page.assets")
 ```
 
 You have access to helpers too.
@@ -282,8 +572,6 @@ You have access to helpers too.
 ```ts
 const assets = JSON.parse("@ejs: include('myasset.svg')")
 ```
-
-const assets = JSON.parse("@ejs: page.assets")
 
 ## `stylus` module
 
@@ -299,6 +587,8 @@ Go to `config/config.ts` and add these lines:
       "@types/stylus": "^0.48.33",
       "stylus": "^0.54.8",
       "stylus-loader": "^3.0.2",
+      "css-loader": "4.2.2",
+      "extract-css-chunks-webpack-plugin": "^4.7.5"
     }
   },
 ```
@@ -384,8 +674,8 @@ modules.i18n.tables["demo"] = {
   appId: process.env["AIRTABLE_APP_ID"],
   tabs: [ "Demo" ],
   view: "Raw",
-  key: "key",
-  category: "category",
+  key: "key", // By default is added to the ignoreColumns field
+  category: "category", // By default is added to the ignoreColumns field
   ignoreColumns: [ "description" ]
 }
 ```
