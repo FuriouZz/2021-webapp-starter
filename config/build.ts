@@ -33,16 +33,17 @@ export default CreateWebpackConfig({
 
     // Views
     const views = pipeline.source.add("app/views")
-    views.file.ignore("**/_*.html")
-    views.file.add("**/*.html", {
-      // output: { ext: ".html" },
+    views.file.ignore("**/_*.ejs")
+    views.file.add("**/*.ejs", {
+      output: { ext: ".html" },
       cache: false,
       tag: 'html'
     })
 
     // Stylus
     const styles = pipeline.source.add("app/styles")
-    styles.file.add("common.css", {
+    styles.file.add("common.styl", {
+      output: { ext: ".css" },
       cache: config.env.cache,
       tag: 'entry'
     })

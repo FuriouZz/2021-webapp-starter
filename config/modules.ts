@@ -4,7 +4,7 @@ ConfigureModules({
 
   "ejs": {
     // Toggle module loading
-    // enabled: true,
+    enabled: true,
 
     // Set relative module path
     path: "modules/ejs",
@@ -21,7 +21,7 @@ ConfigureModules({
   },
 
   "stylus": {
-    // enabled: true,
+    enabled: true,
     path: "modules/stylus",
     devDependencies: {
       "@types/stylus": "^0.48.33",
@@ -33,7 +33,7 @@ ConfigureModules({
   },
 
   "css": {
-    enabled: true,
+    // enabled: true,
     path: "modules/css",
     devDependencies: {
       "css-loader": "4.2.2",
@@ -42,7 +42,7 @@ ConfigureModules({
   },
 
   "vue": {
-    // enabled: true,
+    enabled: true,
     path: "modules/vue",
     dependencies: {
       "vue": "2.6.12",

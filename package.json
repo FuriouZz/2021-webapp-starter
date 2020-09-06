@@ -36,6 +36,8 @@
     "stylus": "^0.54.8",
     "stylus-loader": "^3.0.2",
     "css-loader": "4.2.2",
-    "extract-css-chunks-webpack-plugin": "^4.7.5"
+    "extract-css-chunks-webpack-plugin": "^4.7.5",
+    "vue-loader": "15.9.3",
+    "vue-template-compiler": "2.6.12"
   }
 }
