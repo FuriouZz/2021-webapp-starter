@@ -5,7 +5,7 @@ import { Hooks } from "./hooks"
 import { overrideProcessEnv } from "./utils";
 import { deep_clone } from "lol/js/object";
 
-export function CreateWebpackConfig<T=any>(user: WK.ModuleHooks<T>): (env: WK.EnvConfig) => Promise<Configuration> {
+export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.EnvConfig) => Promise<Configuration> {
   return async function (cliEnv: WK.EnvConfig = {} as any) {
     Hooks.add(user)
 

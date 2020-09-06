@@ -25,10 +25,10 @@ export namespace WK {
 
   export type ModuleHooks<T=any> = {
     options?: () => T,
-    modules?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig>) => void,
-    env?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig>) => void,
-    assets?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig>) => void,
-    webpack?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | "webpack">) => void,
+    modules?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T> & T) => void,
+    env?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T> & T) => void,
+    assets?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T> & T) => void,
+    webpack?: (config: Pick<ProjectConfig, "env" | keyof ModuleConfig | keyof T  & T| "webpack">) => void,
   }
 
 }
