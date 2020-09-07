@@ -34,7 +34,7 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
       watch: false,
       reload: true,
       https: false,
-      host: "",
+      host: "/",
       cache: false,
       compress: false,
       output: "public",
@@ -56,7 +56,7 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
     // Fetch assets
     project.assets.pipeline.fetch(true)
 
-    await project.assets.pipeline.copy()
+    // await project.assets.pipeline.copy()
 
     const webpack = project.webpack = Webpack(project)
 

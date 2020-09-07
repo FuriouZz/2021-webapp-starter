@@ -86,7 +86,7 @@ ConfigureModules({
   },
 
   "pre-render-spa": {
-    // enabled: true,
+    enabled: true,
     path: "modules/pre-render-spa",
     devDependencies: {
       "prerender-spa-plugin": "3.4.0"

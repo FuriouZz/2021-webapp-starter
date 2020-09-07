@@ -2,8 +2,7 @@ import { CreateWebpackConfig } from "./workflow/build";
 
 export default CreateWebpackConfig({
 
-  // onModulesUpdate({ typescript, preRenderSPA, env }) {
-  onModulesUpdate({ typescript }) {
+  onModulesUpdate({ typescript, preRenderSPA, env }) {
     typescript.build = "fast"
     // modules.i18n.tables["i18n"] = {
     //   appId: process.env['AIRTABLE_APP_ID'],
@@ -12,12 +11,14 @@ export default CreateWebpackConfig({
     //   flatten: true,
     // }
 
-    // preRenderSPA.enabled = !env.server
-    // preRenderSPA.routes.push('/hello', '/hola')
+    preRenderSPA.enabled = !env.server
+    preRenderSPA.routes.push('/hello', '/hola')
   },
 
   onAssetsUpdate(config) {
     const { pipeline } = config.assets
+
+    pipeline.resolve.host = config.env.host
 
     // Change output
     pipeline.resolve.output("dist")
