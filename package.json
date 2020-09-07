@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "config": "node config/workflow/bin/ts.js run config/modules.ts",
+    "config": "node config/workflow/bin/ts.js run config/workflow/config.ts",
     "build": "node config/workflow/bin/ts.js run config/modules.ts && webpack --config tmp/build.js",
     "start": "node config/workflow/bin/ts.js run config/modules.ts && webpack-dev-server --config tmp/build.js",
     "test:dist": "npx http-server dist"
@@ -11,15 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "lol": "github:wk-js/lol.js#0.0.19",
-    "style-loader": "^1.2.1",
-    "vue": "2.6.12"
+    "lol": "github:wk-js/lol.js#0.0.19"
   },
   "devDependencies": {
-    "@types/airtable": "^0.5.6",
     "@types/lodash.template": "4.4.6",
     "@types/node": "12.0.12",
-    "@types/stylus": "^0.48.33",
     "@types/webpack": "4.4.34",
     "@types/webpack-dev-server": "3.1.6",
     "asset-pipeline": "github:wk-js/asset-pipeline#3.1.3",
