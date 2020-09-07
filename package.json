@@ -5,7 +5,8 @@
   "scripts": {
     "config": "node config/workflow/bin/ts.js run config/modules.ts",
     "build": "node config/workflow/bin/ts.js run config/modules.ts && webpack --config tmp/build.js",
-    "start": "node config/workflow/bin/ts.js run config/modules.ts && webpack-dev-server --config tmp/build.js"
+    "start": "node config/workflow/bin/ts.js run config/modules.ts && webpack-dev-server --config tmp/build.js",
+    "test:dist": "npx http-server dist"
   },
   "author": "",
   "license": "ISC",
