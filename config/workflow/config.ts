@@ -75,7 +75,7 @@ function installDependencies({ devDeps, deps }: {
       }
     }
 
-    return JSON.stringify(content, null, 2)
+    return `${JSON.stringify(content, null, 2)}\n`
   })
 
   if (needInstall) {
@@ -148,6 +148,7 @@ function checkLastUpdate() {
 
   const files = fetch([
     "config/**/*.ts",
+    "config/modules.jsonc",
     "config/tsconfig.json",
   ], [
     "config/modules/modules.ts",
@@ -161,8 +162,7 @@ function checkLastUpdate() {
   return highest > ref
 }
 
-export async function ConfigureModules(items: Record<string, UserConfig>) {
-
+async function ConfigureModules(items: Record<string, UserConfig>) {
   const modules: Config[] = []
   const include: Config[] = []
   const deps: Config['dependencies'] = {}
@@ -199,12 +199,21 @@ export async function ConfigureModules(items: Record<string, UserConfig>) {
   const _needUpdate = checkLastUpdate()
 
   if (_needUpdate) {
-    console.log("[info] config need an update")
+    console.log("[info] Config need an update")
     updateTSConfig({ modules, include })
     installDependencies({ deps, devDeps })
     updateTypes(include)
     spawnSync("npx tsc -p config/tsconfig.json", { stdio: "inherit", shell: true })
+    console.log(`[info] Config compiled`)
   } else {
-    console.log("[info] config does not need an update")
+    console.log("[info] Config does not need an update")
   }
 }
+
+function main() {
+  const json = requireJSON(readFileSync("config/modules.jsonc", { encoding: "utf-8" }), "config/modules.jsonc")
+  return ConfigureModules(json)
+}
+
+main()
+  .then(null, console.log)
