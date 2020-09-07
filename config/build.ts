@@ -2,11 +2,7 @@ import { CreateWebpackConfig } from "./workflow/build";
 
 export default CreateWebpackConfig({
 
-  // env({ env }) {
-  //   // Example: Override watch
-  //   env.watch = true
-  // },
-
+  // onModulesUpdate({ typescript, preRenderSPA, env }) {
   onModulesUpdate({ typescript }) {
     typescript.build = "fast"
     // modules.i18n.tables["i18n"] = {
@@ -15,6 +11,9 @@ export default CreateWebpackConfig({
     //   tabs: [ "Localisation view" ],
     //   flatten: true,
     // }
+
+    // preRenderSPA.enabled = !env.server
+    // preRenderSPA.routes.push('/hello', '/hola')
   },
 
   onAssetsUpdate(config) {
@@ -58,6 +57,12 @@ export default CreateWebpackConfig({
       } : false,
       tag: "asset",
     })
+  },
+
+  onWebpackUpdate({ webpack, env }) {
+    if (env.server) {
+      webpack.devServer.historyApiFallback = true
+    }
   }
 
 })

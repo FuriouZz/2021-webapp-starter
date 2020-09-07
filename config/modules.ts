@@ -46,6 +46,7 @@ ConfigureModules({
     path: "modules/vue",
     dependencies: {
       "vue": "2.6.12",
+      "vue-router": "^3.4.3"
     },
     devDependencies: {
       "vue-loader": "15.9.3",
