@@ -53,13 +53,13 @@ ConfigureModules({
     },
   },
 
-  // "targets": {
-  //   // enabled: true,
-  //   path: "modules/targets",
-  //   devDependencies: {
-  //     "js-yaml": "3.13.1",
-  //   }
-  // },
+  "targets": {
+    // enabled: true,
+    path: "modules/targets",
+    devDependencies: {
+      "js-yaml": "3.13.1",
+    }
+  },
 
   "aws": {
     // enabled: true,
