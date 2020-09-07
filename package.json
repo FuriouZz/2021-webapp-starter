@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "config": "node config/workflow/bin/ts.js run config/workflow/config.ts",
-    "build": "node config/workflow/bin/ts.js run config/modules.ts && webpack --config tmp/build.js",
-    "start": "node config/workflow/bin/ts.js run config/modules.ts && webpack-dev-server --config tmp/build.js",
+    "build": "node config/workflow/bin/ts.js run config/workflow/config.ts && webpack --config tmp/build.js",
+    "start": "node config/workflow/bin/ts.js run config/workflow/config.ts && webpack-dev-server --config tmp/build.js",
     "test:dist": "npx http-server dist"
   },
   "author": "",
