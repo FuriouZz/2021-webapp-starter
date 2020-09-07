@@ -37,7 +37,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
     let yml = loadYML(path)
     if (typeof yml.extend === 'string') yml = merge({ concat: false }, loadYML(join(targets.path, yml.extend)), yml)
-    delete yml.extend
 
     yml = expose(yml, ...Object.keys(config))
 
