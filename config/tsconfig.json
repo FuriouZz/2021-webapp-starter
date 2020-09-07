@@ -2,9 +2,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "esModuleInterop": true,
     "rootDir": "./",
     "outDir": "../tmp",
+    "esModuleInterop": true,
     "skipLibCheck": true,
     "downlevelIteration": true
   },

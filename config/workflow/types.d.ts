@@ -11,11 +11,11 @@ export namespace WK {
     watch: boolean
     reload: boolean
     compress: boolean
-    copyAssets: boolean
     host: string
     https: boolean
     cache: boolean
     server: boolean
+    output: string
   }
 
   export type ProjectConfig = ModuleConfig & {

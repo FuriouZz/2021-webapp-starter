@@ -37,7 +37,7 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
       host: "",
       cache: false,
       compress: false,
-      copyAssets: true,
+      output: "public",
       server: (() => {
         const cmd = process.argv.join(' ')
         const reg = /webpack-dev-server/

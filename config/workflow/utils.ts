@@ -43,7 +43,7 @@ function _merge(options: { concat: boolean }, obj0: any, obj1: any) {
     }
 
     // Number / String / Boolean
-    else {
+    else if (typeof obj1[key] === "number" || typeof obj1[key] === "string" || typeof obj1[key] === "boolean") {
       obj0[key] = obj1[key]
     }
 

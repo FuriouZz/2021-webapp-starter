@@ -49,7 +49,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     pipeline.manifest.readOnDisk = false
 
     // Set output
-    pipeline.resolve.output("dist")
+    pipeline.resolve.output(config.env.output)
 
     /**
      * Shadow add non-existing files to the manifest
