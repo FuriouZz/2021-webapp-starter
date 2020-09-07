@@ -21,7 +21,7 @@ export default CreateWebpackConfig({
     const { pipeline } = config.assets
 
     // Change output
-    pipeline.resolve.output("dist")
+    pipeline.resolve.output(config.env.output)
 
     // Typescript
     const scripts = pipeline.source.add("app/scripts")

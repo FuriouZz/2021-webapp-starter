@@ -34,7 +34,7 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
       watch: false,
       reload: true,
       https: false,
-      host: "",
+      host: "/",
       cache: false,
       compress: false,
       output: "public",
