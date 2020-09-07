@@ -21,8 +21,8 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules({ typescript, ejs }) {
-    typescript.visitors.push((node, config, factory) => {
+  onModulesUpdate({ typescript, ejs }) {
+    typescript.visitors.push((node, factory) => {
       if (
         (ts.isStringLiteral(node) || ts.isStringTextContainingNode(node))
         && EJS_REG.test(node.text)
@@ -36,7 +36,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     })
   },
 
-  webpack({ webpack, ejs, assets, env }) {
+  onWebpackUpdate({ webpack, ejs, assets, env }) {
     // Add .ejs rule
     webpack.module!.rules.unshift({
       test: /\.ejs$/i,
@@ -49,22 +49,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
         }
       ]
     })
-
-    // Add asset_path() helper
-    ejs.helpers.asset_path = function () {
-      const source_path = this.context.resourcePath
-      return function (path: string, from?: string) {
-        return assets.pipeline.resolve.getPath(path, { from: from || source_path })
-      }
-    }
-
-    // Add asset_url() helper
-    ejs.helpers.asset_url = function () {
-      const source_path = this.context.resourcePath
-      return function (path: string, from?: string) {
-        return assets.pipeline.resolve.getUrl(path, { from: from || source_path })
-      }
-    }
 
     // Add environment
     ejs.data["env"] = {

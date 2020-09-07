@@ -21,7 +21,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  webpack(config) {
+  onWebpackUpdate(config) {
     // Add extensions
     config.webpack.resolve!.extensions!.push(".ts", ".tsx")
 

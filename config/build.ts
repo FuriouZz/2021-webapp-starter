@@ -7,7 +7,7 @@ export default CreateWebpackConfig({
   //   env.watch = true
   // },
 
-  modules({ typescript, html }) {
+  onModulesUpdate({ typescript }) {
     typescript.build = "fast"
     // modules.i18n.tables["i18n"] = {
     //   appId: process.env['AIRTABLE_APP_ID'],
@@ -17,7 +17,7 @@ export default CreateWebpackConfig({
     // }
   },
 
-  assets(config) {
+  onAssetsUpdate(config) {
     const { pipeline } = config.assets
 
     // Change output

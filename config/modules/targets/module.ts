@@ -1,6 +1,6 @@
 import { WK } from "../../workflow/types";
 import YAML from 'js-yaml';
-import { deep_clone } from 'lol/js/object';
+import { deep_clone, expose } from 'lol/js/object';
 import template from "lodash.template";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -23,9 +23,11 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules({ env, modules }) {
+  afterEnvUpdate(config) {
+    const { targets, env } = config
+
     const target = process.env["NODE_ENV"] || "development"
-    const path = join(modules.targets.path, `${target}.yml`)
+    const path = join(targets.path, `${target}.yml`)
     env.target = target
 
     if (!isFile(path)) {
@@ -34,23 +36,34 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
 
     let yml = loadYML(path)
-    if (typeof yml.extend === 'string') yml = merge({ concat: true }, loadYML(join(modules.targets.path, yml.extend)), yml)
+    if (typeof yml.extend === 'string') yml = merge({ concat: false }, loadYML(join(targets.path, yml.extend)), yml)
     delete yml.extend
 
-    // CLI env first, then .yml
-    merge({ concat: true }, env, yml, deep_clone(env))
+    yml = expose(yml, ...Object.keys(config))
 
-    merge({ concat: true }, env, JSON.parse(template(JSON.stringify(env))({
+    // // Merge once
+    // merge({ concat: false }, config, yml)
+
+    // Merge with fields updated
+    merge({ concat: false }, config, JSON.parse(template(JSON.stringify(yml))({
       ENV: { ...process.env },
-      ...env
+      ...config
     })))
 
-    if ("modules" in env) {
-      // @ts-ignore
-      merge({ concat: false }, modules, env.modules || {})
-      // @ts-ignore
-      delete env.modules
-    }
+    // // CLI env first, then .yml
+    // merge({ concat: true }, env, yml, deep_clone(env))
+
+    // merge({ concat: true }, env, JSON.parse(template(JSON.stringify(env))({
+    //   ENV: { ...process.env },
+    //   ...env
+    // })))
+
+    // if ("modules" in env) {
+    //   // @ts-ignore
+    //   merge({ concat: false }, modules, env.modules || {})
+    //   // @ts-ignore
+    //   delete env.modules
+    // }
   }
 
 }

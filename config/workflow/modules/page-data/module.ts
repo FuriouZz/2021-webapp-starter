@@ -20,7 +20,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules(config) {
+  onModulesUpdate(config) {
     config.generate.files.push({
       filename: config.pageData.filename,
       content: async () => {

@@ -84,7 +84,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  webpack({ webpack, preRenderSPA, assets }) {
+  onWebpackUpdate({ webpack, preRenderSPA, assets }) {
     if (preRenderSPA.enabled) {
       const options = omit<any>(preRenderSPA, "renderer")
       options.renderer = new Renderer(preRenderSPA.renderer)

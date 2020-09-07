@@ -20,11 +20,11 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  modules({ env, vue }) {
+  onModulesUpdate({ env, vue }) {
     vue.productionMode = env.target !== "development"
   },
 
-  webpack({ webpack, vue }) {
+  onWebpackUpdate({ webpack, vue }) {
     webpack.resolve!.extensions.push(".vue")
     webpack.resolve!.alias!["vue$"] = "vue/dist/vue.esm.js"
     webpack.module!.rules.unshift({
