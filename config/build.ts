@@ -40,6 +40,7 @@ export default CreateWebpackConfig({
     // Stylus
     const styles = pipeline.source.add("app/styles")
     styles.file.add("**/*.styl", {
+      output: { ext: ".css" },
       cache: config.env.cache,
       tag: "entry:css"
     })
