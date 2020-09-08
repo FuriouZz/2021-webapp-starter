@@ -3,6 +3,7 @@ import ExtractCssChunks from "extract-css-chunks-webpack-plugin";
 
 export type Options = {
   css: {
+    // Enable css-modules (doc: https://github.com/css-modules/css-modules)
     modules: boolean
   }
 }
@@ -45,6 +46,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
           loader: 'css-loader',
           options: {
             esModule: false,
+            modules: config.css.modules,
           }
         }
       ]

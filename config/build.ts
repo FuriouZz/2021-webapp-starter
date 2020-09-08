@@ -2,8 +2,12 @@ import { CreateWebpackConfig } from "./workflow/build";
 
 export default CreateWebpackConfig({
 
-  onModulesUpdate({ typescript }) {
+  onModulesUpdate({ typescript, css }) {
+    // Enable fast build alongside with ts-checker-plugin
     typescript.build = "fast"
+
+    // Enable modules from css-loader (Documentation here: https://github.com/webpack-contrib/css-loader#modules)
+    css.modules = true
   },
 
   onAssetsUpdate(config) {
