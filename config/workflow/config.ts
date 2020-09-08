@@ -186,7 +186,7 @@ async function ConfigureModules(items: Record<string, UserConfig>) {
     if (mod.enabled && mod.requiredModules) {
       for (const [overridedKey, overrideMod] of Object.entries(mod.requiredModules)) {
         console.log(`[info] "${key}" module override "${overridedKey}" module.`)
-        items[overridedKey] = overrideMod
+        items[overridedKey] = Object.assign(items[overridedKey] || {}, overrideMod)
       }
     }
   })
