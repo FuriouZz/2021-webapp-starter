@@ -1,3 +1,5 @@
+import "./subtitle.css"
+
 async function main() {
   console.log(asset_url("flags.png"))
 }

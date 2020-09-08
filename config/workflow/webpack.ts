@@ -1,6 +1,7 @@
 import { WK } from "./types";
 import webpack, { Configuration } from "webpack";
 import * as Path from "path";
+import IgnoreEmitWebpackPlugin from "ignore-emit-webpack-plugin";
 
 type ProjectConfig = Omit<WK.ProjectConfig, "webpack">
 
@@ -51,8 +52,9 @@ export function entries(w: Configuration, config: ProjectConfig) {
   const { pipeline } = config.assets
   const JSEntryReg = /^entry:js$/
   const CSSEntryReg = /^entry:css$/
+  const BundleEntryReg = /^entry:bundle$/
 
-  const CSSBundle = {
+  const bundle = {
     created: false,
     output: "",
     entries: [] as string[]
@@ -62,31 +64,32 @@ export function entries(w: Configuration, config: ProjectConfig) {
     const entry: webpack.Entry = {}
     pipeline.manifest
       .export()
-      .filter(a => JSEntryReg.test(a.tag) || CSSEntryReg.test(a.tag))
+      .filter(a => JSEntryReg.test(a.tag) || CSSEntryReg.test(a.tag) || BundleEntryReg.test(a.tag))
       .forEach(asset => {
         const source = pipeline.source.get(asset.source.uuid)!
 
         let input = "./" + source.path.join(asset.input).raw()
         let output = asset.output
 
-        if (CSSEntryReg.test(asset.tag)) {
-          if (!CSSBundle.created) {
-            CSSBundle.created = true
+        if (BundleEntryReg.test(asset.tag)) {
+          if (!bundle.created) {
+            bundle.created = true
 
             // Create shadow source file
             const shadowSource = pipeline.source.add("__shadow__")
-            shadowSource.file.shadow('css-bundle.js')
+            shadowSource.file.shadow('bundle.js')
             shadowSource.file.fetch()
-            CSSBundle.output = pipeline.resolve.getPath("css-bundle.js")
-            entry[CSSBundle.output] = CSSBundle.entries
+            bundle.output = pipeline.resolve.getPath("bundle.js")
+            entry[bundle.output] = bundle.entries
           }
 
-          CSSBundle.entries.push(input)
+          bundle.entries.push(input)
+        } else if (CSSEntryReg.test(asset.tag)) {
+          entry[`${output}@entry-css`] = input
         } else if (JSEntryReg.test(asset.tag)) {
           entry[output] = input
         }
       })
-console.log(entry);
 
     return entry
   }
@@ -173,4 +176,5 @@ export function optimization(w: Configuration, config: ProjectConfig) {
  */
 export function plugins(w: Configuration, config: ProjectConfig) {
   w.plugins = []
+  w.plugins.push(new IgnoreEmitWebpackPlugin(/@entry-css$/, { debug: true }))
 }
