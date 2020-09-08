@@ -2,7 +2,7 @@ import { CreateWebpackConfig } from "./workflow/build";
 
 export default CreateWebpackConfig({
 
-  onModulesUpdate({ typescript, preRenderSPA, env }) {
+  onModulesUpdate({ typescript, preRenderSPA, env, stylus }) {
     typescript.build = "fast"
     // modules.i18n.tables["i18n"] = {
     //   appId: process.env['AIRTABLE_APP_ID'],
@@ -11,6 +11,10 @@ export default CreateWebpackConfig({
     //   flatten: true,
     // }
 
+    // Enable modules from css-loader (Documentation here: https://github.com/webpack-contrib/css-loader#modules)
+    stylus.modules = true
+
+    // Prerendering
     preRenderSPA.enabled = !env.server
     preRenderSPA.routes.push('/hello', '/hola')
   },
