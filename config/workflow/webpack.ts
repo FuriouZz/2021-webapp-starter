@@ -101,7 +101,7 @@ export function output(w: Configuration, config: ProjectConfig) {
   w.output.path = pipeline.resolve.output().raw()
   w.output.filename = '[name]'
   w.output.chunkFilename = '[name].chunk.js'
-  w.output.publicPath = config.env.host
+  w.output.publicPath = pipeline.resolve.host
 }
 
 /**
