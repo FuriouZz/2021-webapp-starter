@@ -18,8 +18,6 @@ export default CreateWebpackConfig({
   onAssetsUpdate(config) {
     const { pipeline } = config.assets
 
-    pipeline.resolve.host = config.env.host
-
     // Typescript
     const scripts = pipeline.source.add("app/scripts")
     scripts.file.add("main.ts", {
