@@ -35,7 +35,7 @@ export default CreateWebpackConfig({
       tag: "entry:html"
     })
 
-    // Stylus
+    // Stylus (only common css)
     const styles = pipeline.source.add("app/styles")
     styles.file.add("**/*.styl", {
       output: { ext: ".css" },

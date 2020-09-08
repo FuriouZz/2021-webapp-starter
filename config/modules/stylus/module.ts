@@ -1,6 +1,6 @@
 import { StylusPluginFactory } from "./plugin";
 import { WK } from "../../workflow/types";
-import { useFileLoader } from "../../workflow/modules/asset-pipeline/rules";
+import ExtractCssChunks from "extract-css-chunks-webpack-plugin";
 
 export type Options = {
   stylus: {
@@ -21,13 +21,27 @@ export const Hooks: WK.ModuleHooks<Options> = {
   onWebpackUpdate(config) {
     const { webpack, env, assets } = config
 
+    webpack.plugins.push(new ExtractCssChunks({
+      moduleFilename: ({ name }) => {
+        return name.replace(".js", ".css").replace(/@entry-css$/, "")
+      }
+    }))
+
     // Stylus loader
     webpack.module!.rules.unshift({
       test: /\.styl(us)?$/i,
       include: webpack.context,
       use: [
-        useFileLoader(config, false),
-        "extract-loader",
+        {
+          loader: ExtractCssChunks.loader,
+          options: {
+            esModule: false,
+            publicPath(resourcePath: string, context: string) {
+              const path = assets.pipeline.resolve.parse(resourcePath)
+              return path.key ? assets.pipeline.resolve.getUrl(path.key) : path.key
+            }
+          }
+        },
         {
           loader: 'css-loader',
           options: {
