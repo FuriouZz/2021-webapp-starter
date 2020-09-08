@@ -48,6 +48,30 @@
     "devDependencies": {
       "vue-loader": "15.9.3",
       "vue-template-compiler": "2.6.12"
+    },
+
+    // If a module required specific module you can add them here or override current ones
+    "requiredModules": {
+      // Override "css" module
+      "css": {
+        "path": "modules/css/vue",
+        "devDependencies": {
+          "css-loader": "4.2.2",
+          "extract-css-chunks-webpack-plugin": "^4.7.5"
+        }
+      },
+
+      // Override "stylus" module
+      "stylus": {
+        "path": "modules/stylus/vue",
+        "devDependencies": {
+          "@types/stylus": "^0.48.33",
+          "stylus": "^0.54.8",
+          "stylus-loader": "^3.0.2",
+          "css-loader": "4.2.2",
+          "extract-css-chunks-webpack-plugin": "^4.7.5"
+        }
+      }
     }
   },
 

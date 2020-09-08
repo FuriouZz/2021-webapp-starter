@@ -31,7 +31,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
           loader: 'css-loader',
           options: {
             esModule: false,
-            modules: config.css.modules
           }
         }
       ]

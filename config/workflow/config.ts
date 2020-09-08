@@ -1,4 +1,4 @@
-import { isFile, editFileSync, fetch } from "lol/js/node/fs"
+import { isFile, editFileSync, fetch, isDirectory } from "lol/js/node/fs"
 import { toCamelCase } from "lol/js/string"
 import { readFileSync, writeFileSync, statSync } from "fs"
 import { join, normalize, relative, isAbsolute } from "path"
@@ -11,12 +11,14 @@ type Config = {
   dependencies: Record<string, string>,
   devDependencies: Record<string, string>,
   path: string,
-  filePath: string
+  filePath: string,
   dirPath: string
 }
 
-type UserConfig = Partial<Pick<Config, "enabled" | "dependencies" | "devDependencies" | "name">> & {
-  path: string
+type PartialConfig = Partial<Omit<Config, "filePath" | "dirPath">>
+
+type UserConfig = PartialConfig & {
+  requiredModules?: Record<string, PartialConfig>
 }
 
 function cleanPath(path: string) {
@@ -116,7 +118,9 @@ function updateTSConfig({ modules, include }: {
 /**
  * Update types definition
  */
-function updateTypes(include: Config[]) {
+function updateTypes({ include }: {
+  include: Config[]
+}) {
   editFileSync("config/modules/modules.ts", buffer => {
     const options: string[] = []
     const hooks: string[] = []
@@ -163,10 +167,29 @@ function checkLastUpdate() {
 }
 
 async function ConfigureModules(items: Record<string, UserConfig>) {
-  const modules: Config[] = []
-  const include: Config[] = []
-  const deps: Config['dependencies'] = {}
-  const devDeps: Config['devDependencies'] = {}
+  const tsConfigParameters = {
+    modules: [] as Config[],
+    include: [] as Config[]
+  }
+
+  const pkgParameters = {
+    deps: {} as Config['dependencies'],
+    devDeps: {} as Config['devDependencies'],
+  }
+
+  const typesParameters = {
+    include: [] as Config[]
+  }
+
+  // Apply override
+  Object.entries(items).forEach(([key, mod]) => {
+    if (mod.enabled && mod.requiredModules) {
+      for (const [overridedKey, overrideMod] of Object.entries(mod.requiredModules)) {
+        console.log(`[info] "${key}" module override "${overridedKey}" module.`)
+        items[overridedKey] = overrideMod
+      }
+    }
+  })
 
   // Filter modules
   Object.entries(items).forEach(([key, mod]) => {
@@ -187,12 +210,14 @@ async function ConfigureModules(items: Record<string, UserConfig>) {
       dirPath,
     }
 
-    modules.push(m)
+    const isDir = isDirectory(m.dirPath)
+    if (isDir) tsConfigParameters.modules.push(m)
 
-    if (m.enabled && isFile(filePath + '.ts')) {
-      Object.assign(deps, m.dependencies)
-      Object.assign(devDeps, m.devDependencies)
-      include.push(m)
+    if (m.enabled) {
+      Object.assign(pkgParameters.deps, m.dependencies)
+      Object.assign(pkgParameters.devDeps, m.devDependencies)
+      if (isDir) tsConfigParameters.include.push(m)
+      if (isFile(filePath + ".ts")) typesParameters.include.push(m)
     }
   })
 
@@ -200,9 +225,9 @@ async function ConfigureModules(items: Record<string, UserConfig>) {
 
   if (_needUpdate) {
     console.log("[info] Config need an update")
-    updateTSConfig({ modules, include })
-    installDependencies({ deps, devDeps })
-    updateTypes(include)
+    updateTSConfig(tsConfigParameters)
+    installDependencies(pkgParameters)
+    updateTypes(typesParameters)
     spawnSync("npx tsc -p config/tsconfig.json", { stdio: "inherit", shell: true })
     console.log(`[info] Config compiled`)
   } else {
