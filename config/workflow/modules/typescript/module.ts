@@ -2,6 +2,7 @@ import { WK } from "../../types";
 import { Visitor } from "./transformer";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import { tsRule } from "./rules";
+import { join } from "path";
 
 export type Options = {
   typescript: {
@@ -29,7 +30,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     if (config.typescript.build === "fast") {
       config.webpack.plugins!.push(new ForkTsCheckerWebpackPlugin({
         typescript: {
-          configFile: "../tsconfig.json",
+          configFile: join(process.cwd(), "tsconfig.json"),
         }
       }))
     }

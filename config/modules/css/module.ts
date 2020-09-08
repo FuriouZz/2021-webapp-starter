@@ -1,40 +1,37 @@
 import { WK } from "../../workflow/types";
-import ExtractCssChunks from "extract-css-chunks-webpack-plugin";
+import { useFileLoader } from "../../workflow/modules/asset-pipeline/rules";
 
-export type Options = {}
+export type Options = {
+  css: {
+    modules: boolean
+  }
+}
 
 export const Hooks: WK.ModuleHooks<Options> = {
 
-  onWebpackUpdate(config) {
-    const { webpack, assets } = config
-
-    webpack.plugins.push(new ExtractCssChunks({
-      filename: "[name].css",
-      chunkFilename: '[id].css',
-      moduleFilename: ({ name }) => {
-        return name.replace(".js", ".css")
+  options() {
+    return {
+      css: {
+        modules: false
       }
-    }))
+    }
+  },
+
+  onWebpackUpdate(config) {
+    const { webpack } = config
 
     // CSS loader
     webpack.module!.rules.unshift({
       test: /\.css$/i,
       include: webpack.context,
       use: [
-        {
-          loader: ExtractCssChunks.loader,
-          options: {
-            esModule: false,
-            publicPath(resourcePath: string, context: string) {
-              const path = assets.pipeline.resolve.parse(resourcePath)
-              return path.key ? assets.pipeline.resolve.getUrl(path.key) : path.key
-            }
-          }
-        },
+        useFileLoader(config, false),
+        "extract-loader",
         {
           loader: 'css-loader',
           options: {
             esModule: false,
+            modules: config.css.modules
           }
         }
       ]

@@ -25,14 +25,14 @@ export function Webpack(config: ProjectConfig, block?: (w: Configuration, config
  * Configure webpack.mode, webpack.context, webpack.target, etc...
  */
 export function misc(w: Configuration, config: ProjectConfig) {
-  const { appSource } = config.assets
-
   w.mode = config.env.target === "development" ? "development" : "production"
-  w.context = appSource.fullpath.raw()
+  w.context = process.cwd()
   w.watch = config.env.watch
   w.watchOptions = {
     poll: true,
-    ignored: [/scripts\/generated\/.+/],
+    ignored: [
+      Path.join(config.generate.output, "**/*")
+    ],
   }
   w.target = "web"
 
@@ -48,37 +48,45 @@ export function misc(w: Configuration, config: ProjectConfig) {
  * Non-JS/TS file are pushed into an entry point "bundle.js"
  */
 export function entries(w: Configuration, config: ProjectConfig) {
-  const { pipeline, appSource } = config.assets
+  const { pipeline } = config.assets
+  const JSEntryReg = /^entry:js$/
+  const CSSEntryReg = /^entry:css$/
+
+  const CSSBundle = {
+    created: false,
+    output: "",
+    entries: [] as string[]
+  }
 
   w.entry = () => {
-    const assets = pipeline.manifest.export()
-    const bundle = assets.find(a => a.rule!.tag == 'bundle')!
-    const bundleKey = pipeline.resolve.getPath(bundle.input)
-    const bundleItems = []
-
-    const entry: webpack.Entry = {
-      [bundleKey]: bundleItems
-    }
-
-    assets
-      .filter(a => a.rule.tag == 'entry')
+    const entry: webpack.Entry = {}
+    pipeline.manifest
+      .export()
+      .filter(a => JSEntryReg.test(a.tag) || CSSEntryReg.test(a.tag))
       .forEach(asset => {
-        let input = asset.input
+        const source = pipeline.source.get(asset.source.uuid)!
+
+        let input = "./" + source.path.join(asset.input).raw()
         let output = asset.output
 
-        if (asset.source.uuid !== appSource.uuid) {
-          const source = pipeline.source.get(asset.source.uuid)!
-          input = appSource.path.relative(source.path.join(input).raw()).toWeb()
-        }
+        if (CSSEntryReg.test(asset.tag)) {
+          if (!CSSBundle.created) {
+            CSSBundle.created = true
 
-        input = './' + input
+            // Create shadow source file
+            const shadowSource = pipeline.source.add("__shadow__")
+            shadowSource.file.shadow('css-bundle.js')
+            shadowSource.file.fetch()
+            CSSBundle.output = pipeline.resolve.getPath("css-bundle.js")
+            entry[CSSBundle.output] = CSSBundle.entries
+          }
 
-        if (/\.(ts|tsx|js|jsx)$/i.test(Path.extname(input))) {
+          CSSBundle.entries.push(input)
+        } else if (JSEntryReg.test(asset.tag)) {
           entry[output] = input
-        } else {
-          bundleItems.push(input)
         }
       })
+console.log(entry);
 
     return entry
   }
@@ -109,10 +117,11 @@ export function server(w: Configuration, config: ProjectConfig) {
     https: config.env.https,
     inline: config.env.reload,
     watchContentBase: config.env.watch,
-    hot: false,
     watchOptions: {
       poll: true,
-      ignored: [/scripts\/generated\/.+/],
+      ignored: [
+        Path.join(config.generate.output, "**/*")
+      ],
     },
     headers: {
       'Access-Control-Allow-Origin': '*',
@@ -132,8 +141,6 @@ export function resolve(w: Configuration, config: ProjectConfig) {
   w.resolve.alias = {}
   w.resolve.modules = [
     'node_modules',
-    'app/scripts',
-    'app/assets',
   ]
   w.resolve.plugins = []
 }

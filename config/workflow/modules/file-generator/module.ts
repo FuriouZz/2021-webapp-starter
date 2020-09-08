@@ -13,7 +13,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
   options() {
     return {
       generate: {
-        output: "scripts/generated",
+        output: "app/scripts/generated",
         files: []
       }
     }

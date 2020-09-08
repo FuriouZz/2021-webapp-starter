@@ -2,33 +2,19 @@ import { CreateWebpackConfig } from "./workflow/build";
 
 export default CreateWebpackConfig({
 
-  // env({ env }) {
-  //   // Example: Override watch
-  //   env.watch = true
-  // },
-
   onModulesUpdate({ typescript }) {
     typescript.build = "fast"
-    // modules.i18n.tables["i18n"] = {
-    //   appId: process.env['AIRTABLE_APP_ID'],
-    //   view: "All",
-    //   tabs: [ "Localisation view" ],
-    //   flatten: true,
-    // }
   },
 
   onAssetsUpdate(config) {
     const { pipeline } = config.assets
-
-    // Change output
-    pipeline.resolve.output(config.env.output)
 
     // Typescript
     const scripts = pipeline.source.add("app/scripts")
     scripts.file.add("main.ts", {
       output: { ext: ".js" },
       cache: config.env.cache,
-      tag: 'entry',
+      tag: "entry:js",
     })
 
     // Views
@@ -36,14 +22,14 @@ export default CreateWebpackConfig({
     views.file.ignore("**/_*.html")
     views.file.add("**/*.html", {
       cache: false,
-      tag: 'html'
+      tag: "entry:html"
     })
 
-    // Stylus
+    // CSS
     const styles = pipeline.source.add("app/styles")
-    styles.file.add("common.css", {
+    styles.file.add("**/*.css", {
       cache: config.env.cache,
-      tag: 'entry'
+      tag: "entry:css"
     })
 
     // Assets
@@ -52,10 +38,15 @@ export default CreateWebpackConfig({
       output: { dir: "assets/#{output.dir}" },
       cache: config.env.cache ? {
         dir: "assets/#{output.dir}",
-        name: "#{output.name}-#{output.hash}",
+        name: "#{output.name}-#{output.hash}#{ouput.ext}",
       } : false,
-      tag: "asset",
+      tag: "asset"
     })
-  }
+  },
+
+  onWebpackUpdate({ webpack }) {
+    // Enable alias from app/scripts
+    webpack.resolve.modules.push('app/scripts')
+  },
 
 })
