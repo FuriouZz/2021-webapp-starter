@@ -25,7 +25,7 @@
       "stylus": "^0.54.8",
       "stylus-loader": "^3.0.2",
       "css-loader": "4.2.2",
-      "extract-css-chunks-webpack-plugin": "^4.7.5"
+      "extract-loader": "^5.1.0"
     }
   },
 
@@ -34,7 +34,7 @@
     "path": "modules/css",
     "devDependencies": {
       "css-loader": "4.2.2",
-      "extract-css-chunks-webpack-plugin": "^4.7.5"
+      "extract-loader": "^5.1.0"
     }
   },
 

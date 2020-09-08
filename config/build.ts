@@ -20,15 +20,12 @@ export default CreateWebpackConfig({
 
     pipeline.resolve.host = config.env.host
 
-    // Change output
-    pipeline.resolve.output(config.env.output)
-
     // Typescript
     const scripts = pipeline.source.add("app/scripts")
     scripts.file.add("main.ts", {
       output: { ext: ".js" },
       cache: config.env.cache,
-      tag: 'entry',
+      tag: "entry:js",
     })
 
     // Views
@@ -37,15 +34,14 @@ export default CreateWebpackConfig({
     views.file.add("**/*.ejs", {
       output: { ext: ".html" },
       cache: false,
-      tag: 'html'
+      tag: "entry:html"
     })
 
     // Stylus
     const styles = pipeline.source.add("app/styles")
-    styles.file.add("common.styl", {
-      output: { ext: ".css" },
+    styles.file.add("**/*.styl", {
       cache: config.env.cache,
-      tag: 'entry'
+      tag: "entry:css"
     })
 
     // Assets
@@ -54,14 +50,18 @@ export default CreateWebpackConfig({
       output: { dir: "assets/#{output.dir}" },
       cache: config.env.cache ? {
         dir: "assets/#{output.dir}",
-        name: "#{output.name}-#{output.hash}",
+        name: "#{output.name}-#{output.hash}#{ouput.ext}",
       } : false,
-      tag: "asset",
+      tag: "asset"
     })
   },
 
   onWebpackUpdate({ webpack, env }) {
+    // Enable alias from app/scripts
+    webpack.resolve.modules.push('app/scripts')
+
     if (env.server) {
+      // Enable redirection for history support
       webpack.devServer.historyApiFallback = true
     }
   }

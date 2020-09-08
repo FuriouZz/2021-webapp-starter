@@ -16,9 +16,11 @@ export const Hooks: WK.ModuleHooks = {
   },
 
   onWebpackUpdate(config) {
+    const HTMLEntryReg = /^entry:html$/
+
     config.assets.pipeline.manifest
       .export("asset")
-      .filter(asset => asset.tag === "html")
+      .filter(asset => HTMLEntryReg.test(asset.tag))
       .forEach(asset => {
         const source = config.assets.pipeline.source.get(asset.source.uuid)
         const template = source.fullpath.join(asset.input).raw()
