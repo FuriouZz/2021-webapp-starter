@@ -4,8 +4,24 @@ import ExtractCssChunks from "extract-css-chunks-webpack-plugin";
 
 export type Options = {
   stylus: {
-    modules: boolean
+    // Enable css-modules (doc: https://github.com/css-modules/css-modules)
+    modules: boolean | ModuleMode | ModuleOptions
   }
+}
+
+type ModuleMode = "local" | "global" | "pure"
+
+type ModuleOptions = {
+  compileType: "module" | "icss", // (Default: "module")
+  mode: ModuleMode,
+  auto: boolean,
+  exportGlobals: boolean,
+  localIdentName: string, // (eg.: "[path][name]__[local]--[hash:base64:5]")
+  context: string,
+  localIdentHashPrefix: string, // (eg.: "my-custom-hash")
+  namedExport: boolean,
+  exportLocalsConvention: "camelCase" | "asIs" | "camelCaseOnly" | "dashes" | "dashesOnly",
+  exportOnlyLocals: boolean,
 }
 
 export const Hooks: WK.ModuleHooks<Options> = {
