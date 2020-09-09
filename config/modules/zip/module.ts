@@ -25,7 +25,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
   onWebpackUpdate({ webpack, assets, zip }) {
     if (zip.enabled) {
-      const output = assets.pipeline.resolve.output().raw()
+      const output = assets.pipeline.output.os()
       webpack.plugins.push(new ZipPlugin({
         input: output,
         output:  output + '.zip',

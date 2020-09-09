@@ -1,9 +1,10 @@
-import { StylusPluginFactory } from "./plugin";
 import { WK } from "../../workflow/types";
 import ExtractCssChunks from "extract-css-chunks-webpack-plugin";
+import { removeEntryGroup } from "../../workflow/utils/entry";
 
 export type Options = {
   stylus: {
+    // Enable css-modules (doc: https://github.com/css-modules/css-modules)
     modules: boolean
   }
 }
@@ -19,11 +20,11 @@ export const Hooks: WK.ModuleHooks<Options> = {
   },
 
   onWebpackUpdate(config) {
-    const { webpack, env, assets } = config
+    const { webpack, env } = config
 
     webpack.plugins.push(new ExtractCssChunks({
       moduleFilename: ({ name }) => {
-        return name.replace(".js", ".css").replace(/@entry-css$/, "")
+        return removeEntryGroup(name.replace(".js", ".css"))
       }
     }))
 
@@ -35,11 +36,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
         {
           loader: ExtractCssChunks.loader,
           options: {
-            esModule: false,
-            publicPath(resourcePath: string, context: string) {
-              const path = assets.pipeline.resolve.parse(resourcePath)
-              return path.key ? assets.pipeline.resolve.getUrl(path.key) : path.key
-            }
+            esModule: false
           }
         },
         {
@@ -52,7 +49,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
         {
           loader: 'stylus-loader',
           options: {
-            use: [StylusPluginFactory(assets.pipeline)],
             set: {
               "include css": true,
               "compress": env.compress

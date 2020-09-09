@@ -22,7 +22,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
   onWebpackUpdate({ webpack, aws, assets }) {
     if (aws.enabled) {
-      aws.input = assets.pipeline.resolve.output().raw()
+      aws.input = assets.pipeline.output.os()
       webpack.plugins!.push(new AWSDeployPlugin(aws as unknown as DeployOptions))
     }
   }

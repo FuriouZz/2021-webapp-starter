@@ -5,7 +5,7 @@
   </div>
 </template>
 
-<style lang="stylus">
+<style lang="stylus" module>
 .hello {
   color: red
 }
@@ -13,6 +13,8 @@
 
 <script lang="ts">
 export default {
-
+  mounted() {
+    console.log(this)
+  }
 }
 </script>

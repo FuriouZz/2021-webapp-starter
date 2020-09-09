@@ -17,13 +17,6 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
       env: deep_clone(cliEnv),
     }
 
-    // Create config object
-    Hooks.call("options", project)
-
-    // Update modules options
-    Hooks.call("onModulesUpdate", project)
-    Hooks.call("afterModulesUpdate", project)
-
     /**
      * Merge environment options
      * To pass an environment variables, you have to write like this:
@@ -44,6 +37,13 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
         return reg.test(cmd)
       })()
     } as WK.EnvConfig, cliEnv)
+
+    // Create config object
+    Hooks.call("options", project)
+
+    // Update modules options
+    Hooks.call("onModulesUpdate", project)
+    Hooks.call("afterModulesUpdate", project)
 
     // Update env
     Hooks.call("onEnvUpdate", project)

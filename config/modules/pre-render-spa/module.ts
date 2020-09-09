@@ -90,7 +90,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
       options.renderer = new Renderer(preRenderSPA.renderer)
 
       webpack.plugins.push(new PrerenderSPAPlugin(Object.assign({
-        staticDir: assets.pipeline.resolve.output().raw(),
+        staticDir: assets.pipeline.cwd.join(assets.pipeline.output.os()).os(),
       }, options)))
     }
   }

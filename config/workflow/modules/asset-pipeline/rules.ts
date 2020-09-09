@@ -32,18 +32,28 @@ export const mjsRule = () => {
   } as RuleSetRule
 }
 
+export const htmRule = (config: WK.ProjectConfig) => {
+  return {
+    test: /\.html(.+)?/,
+    use: [
+      useFileLoader(config, false),
+      "extract-loader"
+    ]
+  } as RuleSetRule
+}
+
 export function useFileLoader({ assets }: WK.ProjectConfig, esModule = false) {
   return {
     loader: 'file-loader',
     options: {
       esModule,
       outputPath(url: string, resourcePath: string, context: string) {
-        const path = assets.pipeline.resolve.parse(resourcePath)
-        return path.key ? assets.pipeline.resolve.getPath(path.key) : path.key
+        const asset = assets.pipeline.getAsset(resourcePath)
+        return asset ? assets.pipeline.getPath(asset.input) : url
       },
       publicPath(url: string, resourcePath: string, context: string) {
-        const path = assets.pipeline.resolve.parse(resourcePath)
-        return path.key ? assets.pipeline.resolve.getUrl(path.key) : path.key
+        const asset = assets.pipeline.getAsset(resourcePath)
+        return asset ? assets.pipeline.getUrl(asset.input) : url
       },
     }
   } as RuleSetUseItem
