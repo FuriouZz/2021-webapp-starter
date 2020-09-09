@@ -34,7 +34,7 @@ export const transformer = (config: WK.ProjectConfig) => {
       if (!source) return ts.createStringLiteral(path)
 
       // Else replace asset_path()/asset_url() by require() and file-loader do the rest
-      path = relative(dirname(fileName), source.fullpath.join(path).raw())
+      path = relative(dirname(fileName), source.fullpath.join(path).os())
       const id = factory.createIdentifier("require")
       const lit = ts.createStringLiteral(path)
       return factory.createCallExpression(id, [], [lit])

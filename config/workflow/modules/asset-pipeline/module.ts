@@ -2,7 +2,7 @@ import { WK } from "../../types"
 import { transformer, typings } from "./transfomer"
 import { addAssets } from "./page-data"
 import { RuleSetConditions } from "webpack"
-import { rawRule, mjsRule, fileRule } from "./rules";
+import { rawRule, mjsRule, fileRule, useFileLoader, htmRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
 
 export type Options = {
@@ -19,7 +19,7 @@ export type Options = {
 export const Hooks: WK.ModuleHooks<Options> = {
 
   options() {
-    const pipeline = new Pipeline("")
+    const pipeline = new Pipeline("asset")
 
     return {
       assets: {
@@ -42,13 +42,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
     pipeline.cache.enabled = config.env.cache
 
     // Host path = "/" || "file://html_content/"
-    pipeline.resolve.host = config.env.host
+    pipeline.host.setOrigin(config.env.host)
 
     // Override manifest
     pipeline.manifest.readOnDisk = false
 
     // Set output
-    pipeline.resolve.output(config.env.output)
+    pipeline.output.set(config.env.output)
 
     // Add asset_url/asset_path tranformer
     config.typescript.visitors.push(transformer(config as WK.ProjectConfig))
@@ -64,7 +64,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
       config["ejs"].helpers.asset_path = function () {
         const source_path = this.context.resourcePath
         return function (path: string, from?: string) {
-          return config.assets.pipeline.resolve.getPath(path, { from: from || source_path })
+          return config.assets.pipeline.getPath(path, { from: from || source_path })
         }
       }
 
@@ -72,13 +72,14 @@ export const Hooks: WK.ModuleHooks<Options> = {
       config["ejs"].helpers.asset_url = function () {
         const source_path = this.context.resourcePath
         return function (path: string, from?: string) {
-          return config.assets.pipeline.resolve.getUrl(path, { from: from || source_path })
+          return config.assets.pipeline.getUrl(path, { from: from || source_path })
         }
       }
     }
   },
 
   onWebpackUpdate(config) {
+    config.webpack.module!.rules.push(htmRule(config))
     config.webpack.module!.rules.push(fileRule(config))
     config.webpack.module!.rules.push(rawRule(config))
     config.webpack.module!.rules.push(mjsRule())

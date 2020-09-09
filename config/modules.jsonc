@@ -1,7 +1,7 @@
 {
   "ejs": {
     // Toggle module loading
-    // "enabled": true,
+    "enabled": true,
 
     // Set relative module path
     "path": "modules/ejs",

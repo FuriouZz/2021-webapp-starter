@@ -14,6 +14,7 @@
   "include": [
     "workflow/**/*",
     "build.ts",
+    "modules/ejs",
     "modules/css"
   ]
 }

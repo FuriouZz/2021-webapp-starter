@@ -2,6 +2,7 @@ import { WK } from "./types";
 import webpack, { Configuration } from "webpack";
 import * as Path from "path";
 import IgnoreEmitWebpackPlugin from "ignore-emit-webpack-plugin";
+import { toEntryGroup, ANY_ENTRY_REGEX } from "./utils/entry";
 
 type ProjectConfig = Omit<WK.ProjectConfig, "webpack">
 
@@ -50,49 +51,28 @@ export function misc(w: Configuration, config: ProjectConfig) {
  */
 export function entries(w: Configuration, config: ProjectConfig) {
   const { pipeline } = config.assets
-  const JSEntryReg = /^entry:js$/
-  const CSSEntryReg = /^entry:css$/
-  const BundleEntryReg = /^entry:bundle$/
+  const entryRegex = /^entry:[a-z]+$/
+  const entryJSRegex = /^entry:js$/
+  const entry: webpack.Entry = {}
 
-  const bundle = {
-    created: false,
-    output: "",
-    entries: [] as string[]
-  }
+  pipeline.manifest
+    .export("asset_source")
+    .filter(a => entryRegex.test(a.tag))
+    .forEach(asset => {
+      let input = "./" + asset.source.path.join(asset.input).web()
+      let output = asset.output
 
-  w.entry = () => {
-    const entry: webpack.Entry = {}
-    pipeline.manifest
-      .export()
-      .filter(a => JSEntryReg.test(a.tag) || CSSEntryReg.test(a.tag) || BundleEntryReg.test(a.tag))
-      .forEach(asset => {
-        const source = pipeline.source.get(asset.source.uuid)!
+      if (entryJSRegex.test(asset.tag)) {
+        asset.source.file.shadow(output.replace(".js", ".css"))
+        asset.source.file.fetch()
+        entry[output] = input
+      } else {
+        output = `${output}${toEntryGroup(asset.tag)}`
+        entry[output] = input
+      }
+    })
 
-        let input = "./" + source.path.join(asset.input).raw()
-        let output = asset.output
-
-        if (BundleEntryReg.test(asset.tag)) {
-          if (!bundle.created) {
-            bundle.created = true
-
-            // Create shadow source file
-            const shadowSource = pipeline.source.add("__shadow__")
-            shadowSource.file.shadow('bundle.js')
-            shadowSource.file.fetch()
-            bundle.output = pipeline.resolve.getPath("bundle.js")
-            entry[bundle.output] = bundle.entries
-          }
-
-          bundle.entries.push(input)
-        } else if (CSSEntryReg.test(asset.tag)) {
-          entry[`${output}@entry-css`] = input
-        } else if (JSEntryReg.test(asset.tag)) {
-          entry[output] = input
-        }
-      })
-
-    return entry
-  }
+  w.entry = entry
 }
 
 /**
@@ -101,10 +81,10 @@ export function entries(w: Configuration, config: ProjectConfig) {
 export function output(w: Configuration, config: ProjectConfig) {
   const { pipeline } = config.assets
   w.output = {}
-  w.output.path = pipeline.resolve.output().raw()
+  w.output.path = pipeline.cwd.join(pipeline.output.os()).os()
   w.output.filename = '[name]'
   w.output.chunkFilename = '[name].chunk.js'
-  w.output.publicPath = pipeline.resolve.host
+  w.output.publicPath = pipeline.host.toString()
 }
 
 /**
@@ -176,5 +156,5 @@ export function optimization(w: Configuration, config: ProjectConfig) {
  */
 export function plugins(w: Configuration, config: ProjectConfig) {
   w.plugins = []
-  w.plugins.push(new IgnoreEmitWebpackPlugin(/@entry-css$/, { debug: true }))
+  w.plugins.push(new IgnoreEmitWebpackPlugin(ANY_ENTRY_REGEX, { debug: true }))
 }

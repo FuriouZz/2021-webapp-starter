@@ -17,14 +17,14 @@ export default CreateWebpackConfig({
     const scripts = pipeline.source.add("app/scripts")
     scripts.file.add("main.ts", {
       output: { ext: ".js" },
-      cache: config.env.cache,
       tag: "entry:js",
     })
 
     // Views
     const views = pipeline.source.add("app/views")
-    views.file.ignore("**/_*.html")
-    views.file.add("**/*.html", {
+    views.file.ignore("**/_*.html.ejs")
+    views.file.add("**/*.html.ejs", {
+      output: { ext: "" }, // Remove .ejs extension
       cache: false,
       tag: "entry:html"
     })
@@ -32,7 +32,6 @@ export default CreateWebpackConfig({
     // CSS
     const styles = pipeline.source.add("app/styles")
     styles.file.add("**/*.css", {
-      cache: config.env.cache,
       tag: "entry:css"
     })
 
@@ -40,10 +39,7 @@ export default CreateWebpackConfig({
     const assets = pipeline.source.add("app/assets")
     assets.file.add("**/*", {
       output: { dir: "assets/#{output.dir}" },
-      cache: config.env.cache ? {
-        dir: "assets/#{output.dir}",
-        name: "#{output.name}-#{output.hash}#{ouput.ext}",
-      } : false,
+      cache: "#{output.name}-#{output.hash}#{ouput.ext}",
       tag: "asset"
     })
   },

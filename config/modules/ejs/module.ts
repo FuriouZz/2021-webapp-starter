@@ -36,7 +36,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     })
   },
 
-  onWebpackUpdate({ webpack, ejs, assets, env }) {
+  onWebpackUpdate({ webpack, ejs, env }) {
     // Add .ejs rule
     webpack.module!.rules.unshift({
       test: /\.ejs$/i,
