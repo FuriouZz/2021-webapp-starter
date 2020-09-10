@@ -58,10 +58,10 @@ export function entries(w: Configuration, config: ProjectConfig) {
     .filter(a => ANY_ENTRY_TAG_REGEX.test(a.tag))
     .forEach(asset => {
       let input = "./" + asset.source.path.join(asset.input).web()
-      let output = asset.output
+      let output = config.assets.pipeline.getPath(asset.input)
 
       if (entryJSRegex.test(asset.tag)) {
-        asset.source.file.shadow(output.replace(".js", ".css"))
+        asset.source.file.shadow(asset.input.replace(/\.(ts|tsx|js|jsx)/, ".css"))
         asset.source.file.fetch()
         entry[output] = input
       } else {
@@ -92,7 +92,7 @@ export function server(w: Configuration, config: ProjectConfig) {
   if (process.argv.join(' ').indexOf('webpack-dev-server') == -1) return
 
   w.devServer = {
-    contentBase: w.context,
+    contentBase: true,
     host: "0.0.0.0",
     port: 3000,
     https: config.env.https,

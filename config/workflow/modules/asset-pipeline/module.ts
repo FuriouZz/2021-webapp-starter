@@ -1,7 +1,7 @@
 import { WK } from "../../types"
 import { transformer, typings } from "./transfomer"
 import { addAssets } from "./page-data"
-import { RuleSetConditions } from "webpack"
+import { RuleSetCondition } from "webpack"
 import { rawRule, mjsRule, fileRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
 import { ANY_ENTRY_REGEX } from "../../utils/entry";
@@ -12,8 +12,8 @@ export type Options = {
     pipeline: Pipeline
     hashKey: string,
     rules: {
-      file: RuleSetConditions,
-      raw: RuleSetConditions,
+      file: RuleSetCondition[],
+      raw: RuleSetCondition[],
     }
   }
 }
@@ -77,21 +77,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
     // Trick to bypass type-checker
     if (config["ejs"]) {
-      // Add asset_path() helper
-      config["ejs"].helpers.asset_path = function () {
-        const source_path = this.context.resourcePath
-        return function (path: string, from?: string) {
-          return config.assets.pipeline.getPath(path, { from: from || source_path })
-        }
-      }
+      const { ejsHelpers } = require("./ejs-helpers");
+      ejsHelpers(config as WK.ProjectConfig)
+    }
 
-      // Add asset_url() helper
-      config["ejs"].helpers.asset_url = function () {
-        const source_path = this.context.resourcePath
-        return function (path: string, from?: string) {
-          return config.assets.pipeline.getUrl(path, { from: from || source_path })
-        }
-      }
+    if (config["stylus"]) {
+      const { StylusPluginFactory } = require("./stylus-plugin")
+      config["stylus"].use.push(StylusPluginFactory(config as WK.ProjectConfig))
     }
   },
 

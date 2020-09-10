@@ -27,6 +27,7 @@ export const stylusRule: (config: WK.ProjectConfig) => RuleSetRule = (config) =>
       {
         loader: 'stylus-loader',
         options: {
+          use: config.stylus.use,
           set: {
             "include css": true,
             "compress": config.env.compress

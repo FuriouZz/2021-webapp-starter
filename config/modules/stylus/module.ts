@@ -6,7 +6,8 @@ import { stylusRule } from "./rules";
 export type Options = {
   stylus: {
     // Enable css-modules (doc: https://github.com/css-modules/css-modules)
-    modules: boolean
+    modules: boolean,
+    use: ((styl: any) => void)[],
   }
 }
 
@@ -15,7 +16,8 @@ export const Hooks: WK.ModuleHooks<Options> = {
   options() {
     return {
       stylus: {
-        modules: false
+        modules: false,
+        use: []
       }
     }
   },

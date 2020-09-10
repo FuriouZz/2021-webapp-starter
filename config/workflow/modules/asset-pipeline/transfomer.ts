@@ -24,17 +24,13 @@ export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
       const fileName = node.getSourceFile().fileName
 
       // Check if the asset exist in asset-pipeline
-      const asset = pipeline.manifest.get(path)
+      const asset = pipeline.manifest.getWithSource(path)
 
       // If the asset does not exist, return given path
       if (!asset) return ts.createStringLiteral(path)
-      const source = pipeline.source.get(asset.source.uuid)
-
-      // If the source does not exist, return given path
-      if (!source) return ts.createStringLiteral(path)
 
       // Else replace asset_path()/asset_url() by require() and file-loader do the rest
-      path = relative(dirname(fileName), source.fullpath.join(path).os())
+      path = relative(dirname(fileName), asset.source.fullpath.join(asset.input).os())
       const id = factory.createIdentifier("require")
       const lit = ts.createStringLiteral(path)
       return factory.createCallExpression(id, [], [lit])

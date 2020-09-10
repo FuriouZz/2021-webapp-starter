@@ -13,16 +13,10 @@ export interface EJSOptions extends TemplateOptions {
   helpers: Dictionary<EJSHelper>
 }
 
-export interface EJSLoaderOptions extends EJSOptions {
-  extract: boolean
-  esModule: boolean
-}
-
 export interface EJSLoaderContext {
   context: loader.LoaderContext,
-  options: EJSLoaderOptions,
+  options: EJSOptions,
   source: string
-  loadModule: (request: string) => void
 }
 
 interface IFrontMatterAttributes {
@@ -32,19 +26,15 @@ interface IFrontMatterAttributes {
   [key: string]: any
 }
 
-export function render_template(source: string, options?: Partial<EJSOptions>) {
-  const opts = Object.assign({
-    data: {},
-    helpers: {}
-  }, options || {})
+export function render_template(source: string, options: EJSOptions = { data: {}, helpers: {} }) {
   return template(source, {
-    escape: opts.escape,
-    evaluate: opts.evaluate,
-    imports: opts.imports,
-    interpolate: opts.interpolate,
-    sourceURL: opts.sourceURL,
-    variable: opts.variable
-  })(opts.data)
+    escape: options.escape,
+    evaluate: options.evaluate,
+    imports: options.imports,
+    interpolate: options.interpolate,
+    sourceURL: options.sourceURL,
+    variable: options.variable
+  })(options.data)
 }
 
 function render(this: EJSLoaderContext) {
@@ -101,50 +91,21 @@ function add_helpers(this: EJSLoaderContext) {
   this.options.imports!.include = _internals.include
 }
 
-function loadModule(this: loader.LoaderContext, request) {
-  return new Promise<any>((resolve, reject) => {
-    this.loadModule(request, (err, source, sourceMap, module) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve({ source, sourceMap, module })
-      }
-    })
-  })
-}
+export default function EJSLoader(this: loader.LoaderContext, source: string | Buffer) {
+  let options: EJSOptions = (typeof this.query == 'object' && this.query) ? this.query : {}
 
-export default function EJSLoader(this: loader.LoaderContext, source: string) {
-  const callback = this.async()
-  const modulesToLoad: string[] = []
-
-  const options: EJSLoaderOptions = Object.assign({
-    imports: {},
-    helpers: {},
-    data: {},
-    extract: true,
-    esModule: true
-  }, this.query || {})
+  options.imports = options.imports || {}
+  options.helpers = options.helpers || {}
+  options.data    = options.data || {}
 
   const loader: EJSLoaderContext = {
     context: this,
     options,
-    source,
-    loadModule: (request) => modulesToLoad.push(request)
+    source: source as string
   }
 
   add_helpers.call(loader)
   const result = render.call(loader)
 
-  const xprt = options.esModule ? "export default " : "module.exports = "
-
-  if (modulesToLoad.length === 0) {
-    callback(null, options.extract ? result : xprt + JSON.stringify(result), null)
-  } else {
-    const ps = modulesToLoad.map(request => loadModule.call(this, request))
-    Promise.all(ps).then(() => {
-      callback(null, options.extract ? result : xprt + JSON.stringify(result), null)
-    }, (err) => {
-      callback(err)
-    })
-  }
+  return "module.exports = " + JSON.stringify(result)
 }
