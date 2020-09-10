@@ -1,5 +1,5 @@
 import { RouteConfig } from "vue-router";
-import HelloComponent from "./components/hello.vue";
+import HelloComponent from "./components/hello/hello";
 import HolaComponent from "./components/hola.vue";
 
 export const Routes: RouteConfig[] = [

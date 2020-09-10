@@ -1,8 +1,7 @@
 import { WK } from "./types";
 import webpack, { Configuration } from "webpack";
 import * as Path from "path";
-import IgnoreEmitWebpackPlugin from "ignore-emit-webpack-plugin";
-import { toEntryGroup, ANY_ENTRY_REGEX } from "./utils/entry";
+import { toEntryGroup, ANY_ENTRY_TAG_REGEX } from "./utils/entry";
 
 type ProjectConfig = Omit<WK.ProjectConfig, "webpack">
 
@@ -51,19 +50,18 @@ export function misc(w: Configuration, config: ProjectConfig) {
  */
 export function entries(w: Configuration, config: ProjectConfig) {
   const { pipeline } = config.assets
-  const entryRegex = /^entry:[a-z]+$/
   const entryJSRegex = /^entry:js$/
   const entry: webpack.Entry = {}
 
   pipeline.manifest
     .export("asset_source")
-    .filter(a => entryRegex.test(a.tag))
+    .filter(a => ANY_ENTRY_TAG_REGEX.test(a.tag))
     .forEach(asset => {
       let input = "./" + asset.source.path.join(asset.input).web()
-      let output = asset.output
+      let output = config.assets.pipeline.getPath(asset.input)
 
       if (entryJSRegex.test(asset.tag)) {
-        asset.source.file.shadow(output.replace(".js", ".css"))
+        asset.source.file.shadow(asset.input.replace(/\.(ts|tsx|js|jsx)/, ".css"))
         asset.source.file.fetch()
         entry[output] = input
       } else {
@@ -94,7 +92,7 @@ export function server(w: Configuration, config: ProjectConfig) {
   if (process.argv.join(' ').indexOf('webpack-dev-server') == -1) return
 
   w.devServer = {
-    contentBase: w.context,
+    contentBase: true,
     host: "0.0.0.0",
     port: 3000,
     https: config.env.https,
@@ -156,5 +154,4 @@ export function optimization(w: Configuration, config: ProjectConfig) {
  */
 export function plugins(w: Configuration, config: ProjectConfig) {
   w.plugins = []
-  w.plugins.push(new IgnoreEmitWebpackPlugin(ANY_ENTRY_REGEX, { debug: true }))
 }

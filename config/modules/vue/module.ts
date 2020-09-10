@@ -1,6 +1,6 @@
 import { WK } from "../../workflow/types";
-import { VueLoaderOptions } from "vue-loader";
 import VueLoaderPlugin from "vue-loader/lib/plugin";
+import { vueRule } from "./rules";
 
 export type Options = {
   vue: {
@@ -24,18 +24,11 @@ export const Hooks: WK.ModuleHooks<Options> = {
     vue.productionMode = env.target !== "development"
   },
 
-  onWebpackUpdate({ webpack, vue }) {
-    webpack.resolve!.extensions.push(".vue")
-    webpack.resolve!.alias!["vue$"] = "vue/dist/vue.esm.js"
-    webpack.module!.rules.unshift({
-      test: /\.vue$/,
-      loader: 'vue-loader',
-      options: {
-        productionMode: vue.productionMode,
-        shadowMode: vue.shadowMode,
-      } as VueLoaderOptions
-    })
-    webpack.plugins!.push(new VueLoaderPlugin())
+  onWebpackUpdate(config) {
+    config.webpack.resolve!.extensions.push(".vue")
+    config.webpack.resolve!.alias!["vue$"] = "vue/dist/vue.esm.js"
+    config.webpack.module!.rules.unshift(vueRule(config))
+    config.webpack.plugins!.push(new VueLoaderPlugin())
   }
 
 }

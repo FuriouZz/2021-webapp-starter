@@ -1,6 +1,7 @@
 const ENTRY_TAG_PREFIX = "entry:"
 const ENTRY_GROUP_PREFIX = "@entry-"
 
+export const ANY_ENTRY_TAG_REGEX = /^entry:[a-z]+$/
 export const ANY_ENTRY_REGEX = /@entry-[a-z]+$/
 
 export function removeEntryGroup(s: string) {

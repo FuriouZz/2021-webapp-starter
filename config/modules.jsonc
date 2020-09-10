@@ -14,7 +14,10 @@
       "@types/lodash.template": "4.4.6",
       "lodash.template": "4.5.0",
       "front-matter": "3.0.1"
-    }
+    },
+
+    // If a module required specific module you can add them here or override active ones
+    "requiredModules": {}
   },
 
   "stylus": {
@@ -48,10 +51,7 @@
     "devDependencies": {
       "vue-loader": "15.9.3",
       "vue-template-compiler": "2.6.12"
-    },
-
-    // If a module required specific module you can add them here or override current ones
-    "requiredModules": {}
+    }
   },
 
   "targets": {

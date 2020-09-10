@@ -7,8 +7,8 @@ import { basename, extname, relative, dirname } from "path";
 const ASSET_REG = /asset_(url|path)/
 type AcceptedType = ts.StringLiteral | ts.NoSubstitutionTemplateLiteral
 
-export const transformer = (config: WK.ProjectConfig) => {
-  const t: Visitor = (node, factory) => {
+export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
+  return (node, factory) => {
     if (ts.isCallExpression(node) && ASSET_REG.test(node.expression.getText()) && node.arguments.length === 1) {
       const { pipeline } = config.assets
       const arg0 = node.arguments[0]
@@ -24,17 +24,13 @@ export const transformer = (config: WK.ProjectConfig) => {
       const fileName = node.getSourceFile().fileName
 
       // Check if the asset exist in asset-pipeline
-      const asset = pipeline.manifest.get(path)
+      const asset = pipeline.manifest.getWithSource(path)
 
       // If the asset does not exist, return given path
       if (!asset) return ts.createStringLiteral(path)
-      const source = pipeline.source.get(asset.source.uuid)
-
-      // If the source does not exist, return given path
-      if (!source) return ts.createStringLiteral(path)
 
       // Else replace asset_path()/asset_url() by require() and file-loader do the rest
-      path = relative(dirname(fileName), source.fullpath.join(path).os())
+      path = relative(dirname(fileName), asset.source.fullpath.join(asset.input).os())
       const id = factory.createIdentifier("require")
       const lit = ts.createStringLiteral(path)
       return factory.createCallExpression(id, [], [lit])
@@ -42,7 +38,6 @@ export const transformer = (config: WK.ProjectConfig) => {
 
     return node
   }
-  return t
 }
 
 export const typings = (config: WK.ProjectConfig) => {

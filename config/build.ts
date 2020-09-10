@@ -4,12 +4,6 @@ export default CreateWebpackConfig({
 
   onModulesUpdate({ typescript, preRenderSPA, env, stylus }) {
     typescript.build = "fast"
-    // modules.i18n.tables["i18n"] = {
-    //   appId: process.env['AIRTABLE_APP_ID'],
-    //   view: "All",
-    //   tabs: [ "Localisation view" ],
-    //   flatten: true,
-    // }
 
     // Enable modules from css-loader (Documentation here: https://github.com/webpack-contrib/css-loader#modules)
     stylus.modules = true
@@ -21,6 +15,7 @@ export default CreateWebpackConfig({
 
   onAssetsUpdate(config) {
     const { pipeline } = config.assets
+    pipeline.cache.enabled = !config.env.server
 
     // Typescript
     const scripts = pipeline.source.add("app/scripts")
@@ -49,12 +44,15 @@ export default CreateWebpackConfig({
     const assets = pipeline.source.add("app/assets")
     assets.file.add("**/*", {
       output: { dir: "assets/#{output.dir}" },
-      cache: "#{output.name}-#{output.hash}#{ouput.ext}",
+      cache: { dir: "assets/#{output.dir}", name: "#{output.name}-#{output.hash}" },
       tag: "asset"
     })
   },
 
   onWebpackUpdate({ webpack, env }) {
+    // Set contentBase
+    if (webpack.devServer) webpack.devServer.contentBase = "./app"
+
     // Enable alias from app/scripts
     webpack.resolve.modules.push('app/scripts')
 

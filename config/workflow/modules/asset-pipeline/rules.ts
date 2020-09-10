@@ -1,5 +1,5 @@
 import { WK } from "../../types"
-import { RuleSetRule, RuleSetUseItem } from "webpack"
+import { RuleSetRule } from "webpack"
 
 // Use this rule to emit files
 export const fileRule = (config: WK.ProjectConfig) => {
@@ -7,18 +7,36 @@ export const fileRule = (config: WK.ProjectConfig) => {
     test: config.assets.rules.file,
     include: config.webpack.context,
     use: [
-      useFileLoader(config, false)
+      {
+        loader: 'file-loader',
+        options: {
+          esModule: false,
+          outputPath(url: string, resourcePath: string, context: string) {
+            const asset = config.assets.pipeline.getAsset(resourcePath)
+            return asset ? config.assets.pipeline.getPath(asset.input) : url
+          },
+          publicPath(url: string, resourcePath: string, context: string) {
+            const asset = config.assets.pipeline.getAsset(resourcePath)
+            return asset ? config.assets.pipeline.getUrl(asset.input) : url
+          },
+        }
+      }
     ]
   } as RuleSetRule
 }
 
-// Use raw loader every text files
+// Use raw loader for every text files
 export const rawRule = ({ assets, webpack }: WK.ProjectConfig) => {
   return {
     test: assets.rules.raw,
     include: webpack.context,
     use: [
-      'raw-loader'
+      {
+        loader: "raw-loader",
+        options: {
+          esModule: false
+        }
+      }
     ]
   } as RuleSetRule
 }
@@ -30,31 +48,4 @@ export const mjsRule = () => {
     include: /node_modules/,
     type: "javascript/auto"
   } as RuleSetRule
-}
-
-export const htmRule = (config: WK.ProjectConfig) => {
-  return {
-    test: /\.html(.+)?/,
-    use: [
-      useFileLoader(config, false),
-      "extract-loader"
-    ]
-  } as RuleSetRule
-}
-
-export function useFileLoader({ assets }: WK.ProjectConfig, esModule = false) {
-  return {
-    loader: 'file-loader',
-    options: {
-      esModule,
-      outputPath(url: string, resourcePath: string, context: string) {
-        const asset = assets.pipeline.getAsset(resourcePath)
-        return asset ? assets.pipeline.getPath(asset.input) : url
-      },
-      publicPath(url: string, resourcePath: string, context: string) {
-        const asset = assets.pipeline.getAsset(resourcePath)
-        return asset ? assets.pipeline.getUrl(asset.input) : url
-      },
-    }
-  } as RuleSetUseItem
 }
