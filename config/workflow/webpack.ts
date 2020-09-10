@@ -92,7 +92,7 @@ export function server(w: Configuration, config: ProjectConfig) {
   if (process.argv.join(' ').indexOf('webpack-dev-server') == -1) return
 
   w.devServer = {
-    contentBase: true,
+    contentBase: "./app",
     host: "0.0.0.0",
     port: 3000,
     https: config.env.https,
