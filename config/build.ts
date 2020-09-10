@@ -50,9 +50,6 @@ export default CreateWebpackConfig({
   },
 
   onWebpackUpdate({ webpack, env }) {
-    // Set contentBase
-    if (webpack.devServer) webpack.devServer.contentBase = "./app"
-
     // Enable alias from app/scripts
     webpack.resolve.modules.push('app/scripts')
 
