@@ -6,9 +6,6 @@ import { rawRule, mjsRule, fileRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
 import { ANY_ENTRY_REGEX } from "../../utils/entry";
 import IgnoreEmitWebpackPlugin from "ignore-emit-webpack-plugin";
-import { dirname, relative } from "path";
-import { readFileSync } from "fs";
-import { ejsHelpers } from "./ejs-helpers";
 
 export type Options = {
   assets: {
@@ -80,6 +77,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
     // Trick to bypass type-checker
     if (config["ejs"]) {
+      const { ejsHelpers } = require("./ejs-helpers");
       ejsHelpers(config as WK.ProjectConfig)
     }
 
