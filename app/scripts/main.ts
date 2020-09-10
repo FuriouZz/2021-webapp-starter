@@ -1,10 +1,8 @@
-import CSS from "./subtitle.css"
-import HTML from "./flags.html.ejs"
+import helloStyles from "./hello.css"
 
 async function main() {
-  console.log(CSS, HTML)
-  console.log(asset_url("flags.png"))
-  document.querySelector("h2").classList.add(CSS.subtitle)
+  console.log("Hello World")
+  document.querySelector("h1").classList.add(helloStyles.hello)
 }
 
 window.addEventListener('DOMContentLoaded', main)
