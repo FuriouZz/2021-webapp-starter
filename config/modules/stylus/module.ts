@@ -1,6 +1,7 @@
 import { WK } from "../../workflow/types";
 import ExtractCssChunks from "extract-css-chunks-webpack-plugin";
 import { removeEntryGroup } from "../../workflow/utils/entry";
+import { stylusRule } from "./rules";
 
 export type Options = {
   stylus: {
@@ -20,44 +21,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
   },
 
   onWebpackUpdate(config) {
-    const { webpack, env } = config
-
-    webpack.plugins.push(new ExtractCssChunks({
+    config.webpack.plugins.push(new ExtractCssChunks({
       moduleFilename: ({ name }) => {
         return removeEntryGroup(name.replace(".js", ".css"))
       }
     }))
 
-    // Stylus loader
-    webpack.module!.rules.unshift({
-      test: /\.styl(us)?$/i,
-      include: webpack.context,
-      use: [
-        {
-          loader: ExtractCssChunks.loader,
-          options: {
-            esModule: false
-          }
-        },
-        {
-          loader: 'css-loader',
-          options: {
-            esModule: false,
-            modules: config.stylus.modules
-          }
-        },
-        {
-          loader: 'stylus-loader',
-          options: {
-            set: {
-              "include css": true,
-              "compress": env.compress
-            }
-          }
-        }
-      ]
-    })
-
+    config.webpack.module!.rules.unshift(stylusRule(config))
   }
 
 }

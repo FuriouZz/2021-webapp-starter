@@ -28,10 +28,12 @@ export const Hooks: WK.ModuleHooks<Options> = {
         const options = config.pageData
         const fetchs = options.datas
 
-        for (const fetch of fetchs) {
+        const ps = fetchs.map(async fetch => {
           const res = fetch(data)
           if ("then" in res) await res
-        }
+        })
+
+        await Promise.all(ps)
 
         return `export const PAGE = ${JSON.stringify(data, null, 2)}`
       }

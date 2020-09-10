@@ -18,6 +18,11 @@ declare module '*.html' {
   export default value;
 }
 
+declare module '*.html.ejs' {
+  const value: string;
+  export default value;
+}
+
 declare module '*.svg' {
   const value: string;
   export default value;

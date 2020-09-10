@@ -2,8 +2,10 @@ import { WK } from "../../types"
 import { transformer, typings } from "./transfomer"
 import { addAssets } from "./page-data"
 import { RuleSetConditions } from "webpack"
-import { rawRule, mjsRule, fileRule, useFileLoader, htmRule } from "./rules";
+import { rawRule, mjsRule, fileRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
+import { ANY_ENTRY_REGEX } from "../../utils/entry";
+import IgnoreEmitWebpackPlugin from "ignore-emit-webpack-plugin";
 
 export type Options = {
   assets: {
@@ -27,7 +29,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
         hashKey: "",
         rules: {
           file: [ /\.(jpe?g|png|gif|webp|webm|mp4|mp3|ogg)$/i ],
-          raw: [ /\.(html|svg|vert|frag|glsl)$/i ],
+          raw: [ /\.(svg|vert|frag|glsl)(\.ejs)?$/i ],
         }
       }
     }
@@ -50,6 +52,20 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Set output
     pipeline.output.set(config.env.output)
 
+    // Export file with entry:html tags
+    const HTML_ENTRY_REGEX = /entry:html$/
+    const HTML_REGEX = /\.html(\.ejs)?$/
+    config.assets.rules.file.push((resourcePath) => {
+      const asset = config.assets.pipeline.getAsset(resourcePath)
+      return !!asset && HTML_ENTRY_REGEX.test(asset.tag)
+    })
+    // Accept HTML in JS
+    config.assets.rules.raw.push((resourcePath) => {
+      if (!HTML_REGEX.test(resourcePath)) return false
+      const asset = config.assets.pipeline.getAsset(resourcePath)
+      return !asset || !HTML_ENTRY_REGEX.test(asset.tag)
+    })
+
     // Add asset_url/asset_path tranformer
     config.typescript.visitors.push(transformer(config as WK.ProjectConfig))
 
@@ -59,6 +75,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Expose assets to PAGE
     config.pageData.datas.push(addAssets(config as WK.ProjectConfig))
 
+    // Trick to bypass type-checker
     if (config["ejs"]) {
       // Add asset_path() helper
       config["ejs"].helpers.asset_path = function () {
@@ -79,10 +96,10 @@ export const Hooks: WK.ModuleHooks<Options> = {
   },
 
   onWebpackUpdate(config) {
-    config.webpack.module!.rules.push(htmRule(config))
     config.webpack.module!.rules.push(fileRule(config))
     config.webpack.module!.rules.push(rawRule(config))
     config.webpack.module!.rules.push(mjsRule())
+    config.webpack.plugins!.push(new IgnoreEmitWebpackPlugin(ANY_ENTRY_REGEX, { debug: true }))
   }
 
 }

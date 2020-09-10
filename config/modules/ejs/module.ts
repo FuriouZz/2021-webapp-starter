@@ -1,7 +1,8 @@
 import { WK } from "../../workflow/types";
-import { EJSOptions, render_template } from "./loader";
+import { EJSOptions, render_template } from "./ejs-loader";
 import { Dictionary } from "lodash";
 import ts from "typescript";
+import { ejsRule } from "./rules";
 
 export type Options = {
   ejs: EJSOptions & { imports: Dictionary<any> }
@@ -21,7 +22,8 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  onModulesUpdate({ typescript, ejs }) {
+  onModulesUpdate({ typescript, ejs, env }) {
+    // Add @ejs: transform
     typescript.visitors.push((node, factory) => {
       if (
         (ts.isStringLiteral(node) || ts.isStringTextContainingNode(node))
@@ -34,27 +36,16 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
       return node
     })
-  },
-
-  onWebpackUpdate({ webpack, ejs, env }) {
-    // Add .ejs rule
-    webpack.module!.rules.unshift({
-      test: /\.ejs$/i,
-      enforce: "pre",
-      include: webpack.context,
-      use: [
-        {
-          loader: __dirname + "/loader.js",
-          options: ejs
-        }
-      ]
-    })
 
     // Add environment
     ejs.data["env"] = {
       target: env.target,
       host: env.host,
     }
+  },
+
+  onWebpackUpdate(config) {
+    config.webpack.module!.rules.unshift(ejsRule(config))
   },
 
 }

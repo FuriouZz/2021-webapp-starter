@@ -7,8 +7,8 @@ import { basename, extname, relative, dirname } from "path";
 const ASSET_REG = /asset_(url|path)/
 type AcceptedType = ts.StringLiteral | ts.NoSubstitutionTemplateLiteral
 
-export const transformer = (config: WK.ProjectConfig) => {
-  const t: Visitor = (node, factory) => {
+export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
+  return (node, factory) => {
     if (ts.isCallExpression(node) && ASSET_REG.test(node.expression.getText()) && node.arguments.length === 1) {
       const { pipeline } = config.assets
       const arg0 = node.arguments[0]
@@ -42,7 +42,6 @@ export const transformer = (config: WK.ProjectConfig) => {
 
     return node
   }
-  return t
 }
 
 export const typings = (config: WK.ProjectConfig) => {
