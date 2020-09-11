@@ -1,16 +1,16 @@
 import ts from "typescript";
 import { Visitor } from "../typescript/transformer";
-import { FileData } from "../file-generator/file-generator-plugin";
 import { WK } from "../../types";
-import { basename, extname, relative, dirname } from "path";
 
 const ASSET_REG = /asset_(url|path)/
+const ASSET_URL_REG = /asset_url/
 type AcceptedType = ts.StringLiteral | ts.NoSubstitutionTemplateLiteral
 
 export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
   return (node, factory) => {
     if (ts.isCallExpression(node) && ASSET_REG.test(node.expression.getText()) && node.arguments.length === 1) {
       const { pipeline } = config.assets
+      const fnStr = node.expression.getText()
       const arg0 = node.arguments[0]
 
       // StringLiteral = "flags.png" | 'flags.png' (accepted)
@@ -21,36 +21,17 @@ export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
       if (!isStringLiteral) return node
 
       let path = (arg0 as AcceptedType).text.trim()
-      const fileName = node.getSourceFile().fileName
+      const filename = node.getSourceFile().fileName
 
-      // Check if the asset exist in asset-pipeline
-      const asset = pipeline.manifest.getWithSource(path)
+      if (ASSET_URL_REG.test(fnStr)) {
+        path = pipeline.getUrl(path, { from: filename })
+      } else {
+        path = pipeline.getPath(path, { from: filename })
+      }
 
-      // If the asset does not exist, return given path
-      if (!asset) return ts.createStringLiteral(path)
-
-      // Else replace asset_path()/asset_url() by require() and file-loader do the rest
-      path = relative(dirname(fileName), asset.source.fullpath.join(asset.input).os())
-      const id = factory.createIdentifier("require")
-      const lit = ts.createStringLiteral(path)
-      return factory.createCallExpression(id, [], [lit])
+      return factory.createStringLiteral(path, false)
     }
 
     return node
   }
-}
-
-export const typings = (config: WK.ProjectConfig) => {
-  return {
-    filename: "assets.d.ts",
-    content() {
-      let content = ""
-      content += `import { PAGE } from "./${basename(config.pageData.filename, extname(config.pageData.filename))}"\n`
-      content += `declare global {\n`
-      content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
-      content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
-      content += `}\n`
-      return content
-    }
-  } as FileData
 }

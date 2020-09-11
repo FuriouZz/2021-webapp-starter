@@ -47,6 +47,9 @@ export default CreateWebpackConfig({
       cache: { dir: "assets/#{output.dir}", name: "#{output.name}-#{output.hash}" },
       tag: "asset"
     })
+
+    // Register a copy of every assets
+    if (!config.env.server) assets.fs.copy("**/*")
   },
 
   onWebpackUpdate({ webpack, env }) {
