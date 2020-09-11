@@ -23,7 +23,14 @@ export const Hooks: WK.ModuleHooks<Options> = {
   onWebpackUpdate(config) {
     config.webpack.plugins.push(new ExtractCssChunks({
       moduleFilename: ({ name }) => {
-        return removeEntryGroup(name.replace(".js", ".css"))
+        const asset = config.assets.pipeline.getAssetFromOutput(name)
+
+        if (asset) {
+          const input = asset.input.replace(/\.(ts|js)x?/, ".css")
+          return config.assets.pipeline.getPath(input)
+        }
+
+        return removeEntryGroup(name.replace(/\.(ts|js)x?/, ".css"))
       }
     }))
 
