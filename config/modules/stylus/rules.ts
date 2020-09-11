@@ -16,7 +16,13 @@ export const stylusRule: (config: WK.ProjectConfig) => RuleSetRule = (config) =>
       {
         loader: 'css-loader',
         options: {
+          // Do use export default
           esModule: false,
+
+          // Do not resolt URLS
+          url: false,
+
+          // Enable CSS modules
           modules: config.stylus.modules ? {
             mode: "local",
             localIdentName: '[local]_[hash:base64]',

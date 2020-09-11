@@ -9,6 +9,9 @@ export const vueRule: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
     options: {
       productionMode: config.vue.productionMode,
       shadowMode: config.vue.shadowMode,
+
+      // Do not transform asset url
+      transformAssetUrls: {},
     } as VueLoaderOptions
   }
 }
