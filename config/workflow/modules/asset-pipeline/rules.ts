@@ -49,3 +49,49 @@ export const mjsRule = () => {
     type: "javascript/auto"
   } as RuleSetRule
 }
+
+export const htmlRule = ({ assets, webpack }: WK.ProjectConfig) => {
+  const HTML_ENTRY_REGEX = /entry:html$/
+
+  return {
+    test: /\.(html)(\.ejs)?$/i,
+    include: webpack.context,
+    oneOf: [
+
+      // Export file with entry:html tags
+      {
+        test(resourcePath) {
+          const asset = assets.pipeline.getAsset(resourcePath)
+          return !!asset && HTML_ENTRY_REGEX.test(asset.tag)
+        },
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              esModule: false,
+              outputPath(url: string, resourcePath: string, context: string) {
+                const asset = assets.pipeline.getAsset(resourcePath)
+                return asset ? assets.pipeline.getPath(asset.input) : url
+              },
+              publicPath(url: string, resourcePath: string, context: string) {
+                const asset = assets.pipeline.getAsset(resourcePath)
+                return asset ? assets.pipeline.getUrl(asset.input) : url
+              },
+            }
+          }
+        ]
+      },
+
+      // Else, accept HTM in JS
+      {
+        // test(resourcePath) {
+        //   const asset = assets.pipeline.getAsset(resourcePath)
+        //   return !asset || !HTML_ENTRY_REGEX.test(asset.tag)
+        // },
+        use: [ "raw-loader" ]
+      }
+
+    ]
+  } as RuleSetRule
+
+}

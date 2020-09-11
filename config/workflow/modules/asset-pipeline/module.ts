@@ -1,16 +1,17 @@
 import { WK } from "../../types"
-import { transformer, typings } from "./transfomer"
-import { addAssets } from "./page-data"
+import { transformer } from "./transfomer"
 import { RuleSetCondition } from "webpack"
-import { rawRule, mjsRule, fileRule } from "./rules";
+import { rawRule, mjsRule, fileRule, htmlRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
 import { ANY_ENTRY_REGEX } from "../../utils/entry";
-import IgnoreEmitWebpackPlugin from "ignore-emit-webpack-plugin";
+import { AssetPipelinePlugin } from "./asset-pipeline-plugin";
+import { basename, extname } from "path";
 
 export type Options = {
   assets: {
     pipeline: Pipeline
     hashKey: string,
+    ignoreEmit: (string | RegExp)[]
     rules: {
       file: RuleSetCondition[],
       raw: RuleSetCondition[],
@@ -27,8 +28,9 @@ export const Hooks: WK.ModuleHooks<Options> = {
       assets: {
         pipeline,
         hashKey: "",
+        ignoreEmit: [ ANY_ENTRY_REGEX ],
         rules: {
-          file: [ /\.(jpe?g|png|gif|webp|webm|mp4|mp3|ogg)$/i ],
+          file: [],
           raw: [ /\.(svg|vert|frag|glsl)(\.ejs)?$/i ],
         }
       }
@@ -52,28 +54,33 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Set output
     pipeline.output.set(config.env.output)
 
-    // Export file with entry:html tags
-    const HTML_ENTRY_REGEX = /entry:html$/
-    const HTML_REGEX = /\.html(\.ejs)?$/
-    config.assets.rules.file.push((resourcePath) => {
-      const asset = config.assets.pipeline.getAsset(resourcePath)
-      return !!asset && HTML_ENTRY_REGEX.test(asset.tag)
-    })
-    // Accept HTML in JS
-    config.assets.rules.raw.push((resourcePath) => {
-      if (!HTML_REGEX.test(resourcePath)) return false
-      const asset = config.assets.pipeline.getAsset(resourcePath)
-      return !asset || !HTML_ENTRY_REGEX.test(asset.tag)
-    })
-
     // Add asset_url/asset_path tranformer
     config.typescript.visitors.push(transformer(config as WK.ProjectConfig))
 
     // Expose global tranformers
-    config.generate.files.push(typings(config as WK.ProjectConfig))
+    config.generate.files.push({
+      filename: "assets.d.ts",
+      content() {
+        let content = ""
+        content += `import { PAGE } from "./${basename(config.pageData.filename, extname(config.pageData.filename))}"\n`
+        content += `declare global {\n`
+        content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
+        content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
+        content += `}\n`
+        return content
+      }
+    })
 
     // Expose assets to PAGE
-    config.pageData.datas.push(addAssets(config as WK.ProjectConfig))
+    config.pageData.datas.push(async (data) => {
+      config.assets.pipeline.fetch(true)
+      const entries = Object.entries(config.assets.pipeline.manifest.export("output_key"))
+      const outputs: Record<string, { path: string, url: string }> = {}
+      for (const [key, value] of entries) {
+        outputs[key] = value.output
+      }
+      data["assets"] = outputs
+    })
 
     // Trick to bypass type-checker
     if (config["ejs"]) {
@@ -90,8 +97,9 @@ export const Hooks: WK.ModuleHooks<Options> = {
   onWebpackUpdate(config) {
     config.webpack.module!.rules.push(fileRule(config))
     config.webpack.module!.rules.push(rawRule(config))
+    config.webpack.module!.rules.push(htmlRule(config))
     config.webpack.module!.rules.push(mjsRule())
-    config.webpack.plugins!.push(new IgnoreEmitWebpackPlugin(ANY_ENTRY_REGEX, { debug: true }))
+    config.webpack.plugins!.push(new AssetPipelinePlugin(config))
   }
 
 }
