@@ -5,6 +5,8 @@ import App from "./app.vue";
 
 async function main() {
   Vue.use(VueRouter)
+  console.log(asset_url("flags.png"));
+  console.log(ejs("env.target"))
 
   new Vue({
     router: new VueRouter({
