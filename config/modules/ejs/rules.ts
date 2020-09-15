@@ -10,7 +10,6 @@ export const ejsRule: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
       {
         loader: __dirname + "/ejs-loader.js",
         options: {
-          esModule: false,
           ...config.ejs
         }
       }
