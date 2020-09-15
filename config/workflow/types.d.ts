@@ -16,6 +16,7 @@ export namespace WK {
     cache: boolean
     server: boolean
     output: string
+    esModule: boolean
   }
 
   export type ProjectConfig = ModuleConfig & {

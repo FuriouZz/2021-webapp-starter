@@ -1,5 +1,5 @@
 import stylus from "stylus";
-import { WK } from "../../../types";
+import { WK } from "../../../../types";
 
 export function StylusPluginFactory(config: WK.ProjectConfig) {
 

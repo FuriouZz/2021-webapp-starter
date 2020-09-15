@@ -21,7 +21,7 @@
   },
 
   "stylus": {
-    // "enabled": true,
+    "enabled": true,
     "path": "modules/stylus",
     "devDependencies": {
       "@types/stylus": "^0.48.33",
@@ -33,7 +33,7 @@
   },
 
   "css": {
-    "enabled": true,
+    // "enabled": true,
     "path": "modules/css",
     "devDependencies": {
       "css-loader": "4.2.2",

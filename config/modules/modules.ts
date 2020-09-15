@@ -1,5 +1,5 @@
 /** Do not touch. This file is updated automatically. */
 import { Options as EjsOptions, Hooks as EjsHooks } from "./ejs/module";
-import { Options as CssOptions, Hooks as CssHooks } from "./css/module";
-export type ModuleOptions = EjsOptions & CssOptions
-export const ModuleHooks = [EjsHooks, CssHooks]
+import { Options as StylusOptions, Hooks as StylusHooks } from "./stylus/module";
+export type ModuleOptions = EjsOptions & StylusOptions
+export const ModuleHooks = [EjsHooks, StylusHooks]

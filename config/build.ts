@@ -2,12 +2,12 @@ import { CreateWebpackConfig } from "./workflow/build";
 
 export default CreateWebpackConfig({
 
-  onModulesUpdate({ typescript, css }) {
+  onModulesUpdate({ typescript, stylus }) {
     // Enable fast build alongside with ts-checker-plugin
     typescript.build = "fast"
 
     // Enable modules from css-loader (Documentation here: https://github.com/webpack-contrib/css-loader#modules)
-    css.modules = true
+    stylus.modules = true
   },
 
   onAssetsUpdate(config) {
@@ -17,6 +17,7 @@ export default CreateWebpackConfig({
 
     // Typescript
     const scripts = pipeline.source.add("app/scripts")
+    scripts.file.shadow("main.css")
     scripts.file.add("main.ts", {
       output: { ext: ".js" },
       cache: { ext: ".js" },
@@ -34,7 +35,8 @@ export default CreateWebpackConfig({
 
     // CSS
     const styles = pipeline.source.add("app/styles")
-    styles.file.add("**/*.css", {
+    styles.file.add("**/*.styl", {
+      output: { ext: ".css" },
       tag: "entry:css"
     })
 

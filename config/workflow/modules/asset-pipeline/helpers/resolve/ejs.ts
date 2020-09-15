@@ -1,5 +1,5 @@
-import { WK } from "../../types";
-import { EJSLoaderContext } from "../../../modules/ejs/ejs-loader";
+import { WK } from "../../../../types";
+import { EJSLoaderContext } from "../../../../../modules/ejs/ejs-loader";
 
 export function ejsHelpers(config: WK.ProjectConfig) {
   // Add asset_path() helper

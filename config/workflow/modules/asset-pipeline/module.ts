@@ -1,5 +1,5 @@
 import { WK } from "../../types"
-import { pageData, transformer, typing } from "./helpers/typescript"
+import { pageData, transformer, typing } from "./helpers/require/typescript"
 import { RuleSetCondition } from "webpack"
 import { rawRule, mjsRule, fileRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
@@ -44,8 +44,8 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Enable cache-break
     pipeline.cache.enabled = config.env.cache
 
-    // Host path = "/" || "file://html_content/"
-    pipeline.host.setOrigin(config.env.host)
+    // Origin
+    pipeline.host.setURL(config.env.host)
 
     // Override manifest
     pipeline.manifest.readOnDisk = false
@@ -66,13 +66,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
     // EJS Helpers
     if (config["ejs"]) {
-      const { ejsHelpers } = require("./helpers/ejs");
+      const { ejsHelpers } = require("./helpers/require/ejs");
       ejsHelpers(config as WK.ProjectConfig)
     }
 
     // Stylus helpers
     if (config["stylus"]) {
-      const { StylusPluginFactory } = require("./helpers/stylus")
+      const { StylusPluginFactory } = require("./helpers/require/stylus")
       config["stylus"].use.push(StylusPluginFactory(config as WK.ProjectConfig))
     }
   },

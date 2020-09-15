@@ -35,7 +35,8 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
         const cmd = process.argv.join(' ')
         const reg = /webpack-dev-server/
         return reg.test(cmd)
-      })()
+      })(),
+      esModule: false,
     } as WK.EnvConfig, cliEnv)
 
     // Create config object

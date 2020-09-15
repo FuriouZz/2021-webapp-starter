@@ -13,6 +13,8 @@ export const stylusRule: (config: WK.ProjectConfig) => RuleSetRule = (config) =>
       {
         loader: 'css-loader',
         options: {
+          // Toggle ES module
+          esModule: config.env.esModule,
           // Enable CSS modules
           modules: config.stylus.modules ? {
             mode: "global",
