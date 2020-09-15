@@ -1,11 +1,10 @@
 import { WK } from "../../types"
-import { transformer } from "./transfomer"
+import { pageData, transformer, typing } from "./helpers/typescript"
 import { RuleSetCondition } from "webpack"
-import { rawRule, mjsRule, fileRule, htmlRule } from "./rules";
+import { rawRule, mjsRule, fileRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
 import { ANY_ENTRY_REGEX } from "../../utils/entry";
 import { AssetPipelinePlugin } from "./asset-pipeline-plugin";
-import { basename, extname } from "path";
 
 export type Options = {
   assets: {
@@ -31,7 +30,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
         ignoreEmit: [ ANY_ENTRY_REGEX ],
         rules: {
           file: [],
-          raw: [ /\.(svg|vert|frag|glsl)(\.ejs)?$/i ],
+          raw: [],
         }
       }
     }
@@ -54,42 +53,26 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Set output
     pipeline.output.set(config.env.output)
 
-    // Add asset_url/asset_path tranformer
+    // Accept text files as raw content
+    config.assets.rules.raw.push(/\.(svg|vert|frag|glsl)(\.ejs)?$/i)
+
+    // Copy any binary files
+    config.assets.rules.file.push(/\.(gif|png|jpe?g|webp|mp3|ogg|mp4|webm|otf|ttf|woff2?)$/i)
+
+    // Typescript helpers
     config.typescript.visitors.push(transformer(config as WK.ProjectConfig))
+    config.generate.files.push(typing(config as WK.ProjectConfig))
+    config.page.datas.push(pageData(config as WK.ProjectConfig))
 
-    // Expose global tranformers
-    config.generate.files.push({
-      filename: "assets.d.ts",
-      content() {
-        let content = ""
-        content += `import { PAGE } from "./${basename(config.pageData.filename, extname(config.pageData.filename))}"\n`
-        content += `declare global {\n`
-        content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
-        content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
-        content += `}\n`
-        return content
-      }
-    })
-
-    // Expose assets to PAGE
-    config.pageData.datas.push(async (data) => {
-      config.assets.pipeline.fetch(true)
-      const entries = Object.entries(config.assets.pipeline.manifest.export("output_key"))
-      const outputs: Record<string, { path: string, url: string }> = {}
-      for (const [key, value] of entries) {
-        outputs[key] = value.output
-      }
-      data["assets"] = outputs
-    })
-
-    // Trick to bypass type-checker
+    // EJS Helpers
     if (config["ejs"]) {
-      const { ejsHelpers } = require("./ejs-helpers");
+      const { ejsHelpers } = require("./helpers/ejs");
       ejsHelpers(config as WK.ProjectConfig)
     }
 
+    // Stylus helpers
     if (config["stylus"]) {
-      const { StylusPluginFactory } = require("./stylus-plugin")
+      const { StylusPluginFactory } = require("./helpers/stylus")
       config["stylus"].use.push(StylusPluginFactory(config as WK.ProjectConfig))
     }
   },
@@ -97,7 +80,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
   onWebpackUpdate(config) {
     config.webpack.module!.rules.push(fileRule(config))
     config.webpack.module!.rules.push(rawRule(config))
-    config.webpack.module!.rules.push(htmlRule(config))
     config.webpack.module!.rules.push(mjsRule())
     config.webpack.plugins!.push(new AssetPipelinePlugin(config))
   }

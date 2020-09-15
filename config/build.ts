@@ -6,17 +6,20 @@ export default CreateWebpackConfig({
     // Enable fast build alongside with ts-checker-plugin
     typescript.build = "fast"
 
-    // Enable modules from css-loader (Documentation here: https://github.com/webpack-contrib/css-loader#modules)
+    // Enable CSS modules
     css.modules = true
   },
 
   onAssetsUpdate(config) {
     const { pipeline } = config.assets
 
+    pipeline.verbose = true
+
     // Typescript
     const scripts = pipeline.source.add("app/scripts")
     scripts.file.add("main.ts", {
       output: { ext: ".js" },
+      cache: { ext: ".js" },
       tag: "entry:js",
     })
 
@@ -39,12 +42,12 @@ export default CreateWebpackConfig({
     const assets = pipeline.source.add("app/assets")
     assets.file.add("**/*", {
       output: { dir: "assets/#{output.dir}" },
-      cache: "#{output.name}-#{output.hash}#{ouput.ext}",
+      cache: { dir: "assets/#{output.dir}", name: "#{output.name}-#{output.hash}" },
       tag: "asset"
     })
 
     // Register a copy
-    if (!config.env.server) assets.fs.copy("**/*")
+    // if (!config.env.server) assets.fs.copy("**/*")
   },
 
   onWebpackUpdate({ webpack }) {

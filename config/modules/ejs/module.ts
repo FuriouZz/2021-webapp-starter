@@ -22,7 +22,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  onModulesUpdate({ typescript, ejs, env, pageData, generate }) {
+  onModulesUpdate({ typescript, ejs, env, page: pageData, generate }) {
     const EJS_REG = /ejs/
 
     // Add @ejs: transform

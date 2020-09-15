@@ -11,8 +11,7 @@ export const tsRule = (config: WK.ProjectConfig) => {
       {
         loader: "ts-loader",
         options: {
-          appendTsSuffixTo: [/\.vue$/],
-          // disable type checker - we will use it in fork plugin
+          // disable type checker - we will use fork plugin
           transpileOnly: config.typescript.build !== "default",
           // onlyCompileBundledFiles: true,
           getCustomTransformers(program: ts.Program) {

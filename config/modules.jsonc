@@ -20,6 +20,15 @@
     "requiredModules": {}
   },
 
+  "css": {
+    "enabled": true,
+    "path": "modules/css",
+    "devDependencies": {
+      "css-loader": "4.2.2",
+      "extract-css-chunks-webpack-plugin": "^4.7.5"
+    }
+  },
+
   "stylus": {
     // "enabled": true,
     "path": "modules/stylus",
@@ -32,25 +41,12 @@
     }
   },
 
-  "css": {
-    "enabled": true,
-    "path": "modules/css",
-    "devDependencies": {
-      "css-loader": "4.2.2",
-      "extract-css-chunks-webpack-plugin": "^4.7.5"
-    }
-  },
-
   "vue": {
     // "enabled": true,
     "path": "modules/vue",
     "dependencies": {
       "vue": "2.6.12",
       "vue-router": "^3.4.3"
-    },
-    "devDependencies": {
-      "vue-loader": "15.9.3",
-      "vue-template-compiler": "2.6.12"
     }
   },
 

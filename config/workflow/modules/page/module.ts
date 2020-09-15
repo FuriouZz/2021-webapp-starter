@@ -3,7 +3,7 @@ import { WK } from "../../types"
 export type PageDataFunction = (data: Record<string, any>) => Promise<void>
 
 export type Options = {
-  pageData: {
+  page: {
     filename: string,
     datas: PageDataFunction[]
   }
@@ -13,7 +13,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
   options() {
     return {
-      pageData: {
+      page: {
         filename: "PAGE.ts",
         datas: [],
       }
@@ -22,10 +22,10 @@ export const Hooks: WK.ModuleHooks<Options> = {
 
   onModulesUpdate(config) {
     config.generate.files.push({
-      filename: config.pageData.filename,
+      filename: config.page.filename,
       content: async () => {
         const data: Record<string, any> = {}
-        const options = config.pageData
+        const options = config.page
         const fetchs = options.datas
 
         const ps = fetchs.map(async fetch => {
