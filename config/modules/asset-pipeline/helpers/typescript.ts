@@ -97,11 +97,10 @@ export function typing(config: WK.ProjectConfig): FileData {
     content() {
       let content = ""
       content += `import { PAGE } from "./${pagePath}"\n`
-      content += `type Asset = { path: string, url: string }\n`
       content += `declare global {\n`
       content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
       content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
-      content += `  export function asset_filter(key: string): Record<string, Asset>\n`
+      content += `  export function asset_filter(key: string): string\n`
       content += `}\n`
       return content
     }
