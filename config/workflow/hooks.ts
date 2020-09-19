@@ -1,10 +1,9 @@
-import { ModuleHooks as CustomHooks } from "../modules/modules"
-import { ModuleHooks as DefaultHooks } from "./modules/modules"
+import { ModuleHooks } from "../modules/modules"
 import { WK } from "./types"
 
 export class Hooks {
 
-  private static _hooks = new Set([...DefaultHooks, ...CustomHooks])
+  private static _hooks = new Set([...ModuleHooks])
 
   static add(hooks: WK.ModuleHooks<any>) {
     Hooks._hooks.add(hooks)

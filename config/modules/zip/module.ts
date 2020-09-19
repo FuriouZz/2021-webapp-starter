@@ -19,10 +19,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  onEnvUpdate({ env, zip }) {
-    zip.enabled = !env.server
-  },
-
   onWebpackUpdate({ webpack, assets, zip }) {
     if (zip.enabled) {
       const output = assets.pipeline.output.os()

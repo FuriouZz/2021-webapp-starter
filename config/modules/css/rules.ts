@@ -9,22 +9,15 @@ export const cssRule: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
     use: [
       {
         loader: ExtractCssChunks.loader,
-        options: {
-          esModule: false
-        }
       },
       {
         loader: 'css-loader',
         options: {
-          // Do use export default
-          esModule: false,
-
-          // Do not resolt URLS
-          url: false,
-
+          // Toggle ES module
+          esModule: config.env.esModule,
           // Enable CSS modules
           modules: config.css.modules ? {
-            mode: "local",
+            mode: "global",
             localIdentName: '[local]_[hash:base64]',
             exportGlobals: true,
           } : false,

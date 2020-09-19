@@ -14,9 +14,14 @@
   "include": [
     "workflow/**/*",
     "build.ts",
+    "modules/asset-pipeline",
+    "modules/asset-pipeline/submodules",
+    "modules/file-generator",
+    "modules/html",
+    "modules/page",
+    "modules/typescript",
     "modules/ejs",
     "modules/stylus",
-    "modules/vue",
-    "modules/pre-render-spa"
+    "modules/vue"
   ]
 }

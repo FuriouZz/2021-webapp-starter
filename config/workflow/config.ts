@@ -1,24 +1,32 @@
 import { isFile, editFileSync, fetch, isDirectory } from "lol/js/node/fs"
 import { toCamelCase } from "lol/js/string"
 import { readFileSync, writeFileSync, statSync } from "fs"
-import { join, normalize, relative, isAbsolute } from "path"
+import { join, normalize, relative, isAbsolute, dirname, extname } from "path"
 import { spawnSync } from "child_process"
 import { requireJSON } from "./utils/require-content"
+import { cwd } from "process"
 
 type Config = {
   enabled: boolean,
   name: string,
+  priority: number,
   dependencies: Record<string, string>,
   devDependencies: Record<string, string>,
   path: string,
   filePath: string,
-  dirPath: string
+  dirPath: string,
+  require: string[]
 }
 
 type PartialConfig = Partial<Omit<Config, "filePath" | "dirPath">>
 
 type UserConfig = PartialConfig & {
-  requiredModules?: Record<string, PartialConfig>
+  override?: Record<string, PartialConfig>
+}
+
+type JSONConfig = {
+  extends: string[]
+  modules: Record<string, UserConfig>
 }
 
 function cleanPath(path: string) {
@@ -128,7 +136,7 @@ function updateTypes({ include }: {
 
     include.forEach(m => {
       const name = toCamelCase(m.name)
-      const path = cleanPath(relative('./config/modules', m.filePath))
+      const path = cleanPath(relative('./config/modules', m.filePath.replace(extname(m.filePath), "")))
       imports.push(`import { Options as ${name}Options, Hooks as ${name}Hooks } from "./${path}";`)
       options.push(`${name}Options`)
       hooks.push(`${name}Hooks`)
@@ -145,6 +153,30 @@ function updateTypes({ include }: {
     console.log(`[info] Types updated`)
     return `/** Do not touch. This file is updated automatically. */\n${content}`
   })
+}
+
+function getModulesAvailability(modules: Record<string, UserConfig>) {
+  const enables: Record<string, boolean> = {}
+
+  function checkAvailability(key: string, from?: string) {
+    if (key === from) throw new Error(`Circular dependency "${key}".`)
+
+    const mod = modules[key]
+    if (!mod) return false
+
+    if (Array.isArray(mod.require)) {
+      for (const k of mod.require) {
+        if (!checkAvailability(k, key)) return false
+      }
+    }
+
+    return !!mod.enabled
+  }
+
+  Object.keys(modules)
+    .forEach(key => enables[key] = checkAvailability(key))
+
+  return enables
 }
 
 function checkLastUpdate() {
@@ -166,68 +198,126 @@ function checkLastUpdate() {
   return highest > ref
 }
 
-async function ConfigureModules(items: Record<string, UserConfig>) {
-  const tsConfigParameters = {
-    modules: [] as Config[],
-    include: [] as Config[]
+function loadConfig(filename: string) {
+  const config = {
+    filename,
+    dirname: "",
+    modules: {} as Record<string, UserConfig>,
+    json: null as JSONConfig
   }
 
-  const pkgParameters = {
-    deps: {} as Config['dependencies'],
-    devDeps: {} as Config['devDependencies'],
+  config.filename = isAbsolute(config.filename) ? config.filename : join(process.cwd(), config.filename)
+  config.dirname = dirname(config.filename)
+  config.json = requireJSON(readFileSync(config.filename, { encoding: "utf-8" }), config.filename) as JSONConfig
+
+  // Fetch extended config and merge modules
+  if (Array.isArray(config.json.extends) && config.json.extends.length > 0) {
+    for (let extend of config.json.extends) {
+      extend = isAbsolute(extend) ? extend : join(config.dirname, extend)
+      const extendedConfig = loadConfig(extend)
+      Object.assign(config.modules, extendedConfig.modules)
+    }
   }
 
-  const typesParameters = {
-    include: [] as Config[]
+  // Override extended modules
+  Object.entries(config.json.modules)
+    .filter(entry => entry[1].enabled)
+    .forEach(([key, mod]) => {
+      if (key in config.modules) console.log(`[info] "${key}" module overrided (extend).`)
+      config.modules[key] = Object.assign(config.modules[key] || {}, mod)
+      config.modules[key].path = join(config.dirname, config.modules[key].path)
+    })
+
+  return config
+}
+
+function parseConfig(filename: string) {
+  const _config = loadConfig(filename)
+
+  const config = {
+    tsConfigParameters: {
+      modules: [] as Config[],
+      include: [] as Config[]
+    },
+    pkgParameters: {
+      deps: {} as Config['dependencies'],
+      devDeps: {} as Config['devDependencies'],
+    },
+    typesParameters: {
+      include: [] as Config[]
+    },
+    ..._config
   }
 
-  // Apply override
-  Object.entries(items).forEach(([key, mod]) => {
-    if (mod.enabled && mod.requiredModules) {
-      for (const [overridedKey, overrideMod] of Object.entries(mod.requiredModules)) {
-        console.log(`[info] "${key}" module override "${overridedKey}" module.`)
-        items[overridedKey] = Object.assign(items[overridedKey] || {}, overrideMod)
+  // Override modules from requiredModules
+  Object.entries(config.modules).forEach(([key, mod]) => {
+    if (mod.enabled && mod.override) {
+      for (const overrideMod of Object.values(mod.override)) {
+        console.log(`[info] "${key}" module overrided (overrideModules).`)
+        config.modules[key] = Object.assign(config.modules[key] || {}, overrideMod)
+        config.modules[key].path = join(config.dirname, config.modules[key].path)
       }
     }
   })
 
+  const enables = getModulesAvailability(config.modules)
+
   // Filter modules
-  Object.entries(items).forEach(([key, mod]) => {
-    if (!isAbsolute(mod.path)) {
-      mod.path = join('./config', mod.path)
-    }
+  Object.entries(config.modules)
+    .filter(entry => enables[entry[0]])
+    .forEach(([key, mod]) => {
+      let dirPath: string
+      let filePath: string
 
-    let dirPath = cleanPath(mod.path)
-    let filePath = cleanPath(mod.path) + '/module'
+      if (isFile(mod.path)) {
+        dirPath = cleanPath(dirname(mod.path))
+        filePath = cleanPath(mod.path)
+      } else {
+        dirPath = cleanPath(mod.path)
+        filePath = cleanPath(mod.path) + '/module.ts'
+      }
 
-    const m: Config = {
-      name: mod.name || key,
-      enabled: typeof mod.enabled === "boolean" ? mod.enabled : false,
-      path: mod.path,
-      dependencies: mod.dependencies || {},
-      devDependencies: mod.devDependencies || {},
-      filePath,
-      dirPath,
-    }
+      const m: Config = {
+        name: mod.name || key,
+        priority: isNaN(mod.priority) ? 0 : mod.priority,
+        enabled: typeof mod.enabled === "boolean" ? mod.enabled : false,
+        path: mod.path,
+        dependencies: mod.dependencies || {},
+        devDependencies: mod.devDependencies || {},
+        filePath,
+        dirPath,
+        require: Array.isArray(mod.require) ? mod.require : [],
+      }
 
-    const isDir = isDirectory(m.dirPath)
-    if (isDir) tsConfigParameters.modules.push(m)
+      const isDir = isDirectory(m.dirPath)
+      if (isDir) config.tsConfigParameters.modules.push(m)
 
-    if (m.enabled) {
-      Object.assign(pkgParameters.deps, m.dependencies)
-      Object.assign(pkgParameters.devDeps, m.devDependencies)
-      if (isDir) tsConfigParameters.include.push(m)
-      if (isFile(filePath + ".ts")) typesParameters.include.push(m)
-    }
+      if (m.enabled) {
+        Object.assign(config.pkgParameters.deps, m.dependencies)
+        Object.assign(config.pkgParameters.devDeps, m.devDependencies)
+        if (isDir) config.tsConfigParameters.include.push(m)
+        if (isFile(filePath)) config.typesParameters.include.push(m)
+      }
+    })
+
+  // Reorder by priority
+  config.typesParameters.include = config.typesParameters.include.sort((a, b) => {
+    return a.priority > b.priority ? -1 : 1
   })
+
+  return config
+}
+
+async function configureModules(filename: string) {
+  const config = parseConfig(filename)
 
   const _needUpdate = checkLastUpdate()
 
   if (_needUpdate) {
     console.log("[info] Config need an update")
-    updateTSConfig(tsConfigParameters)
-    installDependencies(pkgParameters)
-    updateTypes(typesParameters)
+    updateTSConfig(config.tsConfigParameters)
+    installDependencies(config.pkgParameters)
+    updateTypes(config.typesParameters)
     spawnSync("npx tsc -p config/tsconfig.json", { stdio: "inherit", shell: true })
     console.log(`[info] Config compiled`)
   } else {
@@ -236,8 +326,7 @@ async function ConfigureModules(items: Record<string, UserConfig>) {
 }
 
 function main() {
-  const json = requireJSON(readFileSync("config/modules.jsonc", { encoding: "utf-8" }), "config/modules.jsonc")
-  return ConfigureModules(json)
+  return configureModules("config/modules.jsonc")
 }
 
 main()

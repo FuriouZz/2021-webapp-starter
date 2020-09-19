@@ -1,13 +1,12 @@
-import Vue from "vue";
+import { defineComponent, computed } from "vue";
 import $style from "./hello.styl";
 import template from "./hello.html.ejs";
 
-export default Vue.extend({
-
+export const HelloComponent = defineComponent({
   template,
-
-  computed: {
-    $style: () => $style,
-  }
-
+  setup() {
+    return {
+      $style: computed($style)
+    }
+  },
 })

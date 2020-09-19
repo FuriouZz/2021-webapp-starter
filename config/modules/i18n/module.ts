@@ -32,8 +32,8 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  onModulesUpdate({ pageData }) {
-    pageData.datas.push(async (data, { i18n }) => {
+  onModulesUpdate({ page, i18n }) {
+    page.datas.push(async data => {
       data["locales"] = i18n.locales
     })
   },
