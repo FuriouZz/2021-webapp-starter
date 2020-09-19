@@ -28,7 +28,7 @@ export const Hooks: WK.ModuleHooks<Options> = {
         const asset = config.assets.pipeline.manifest.findAssetFromOutput(name)
         if (asset) {
           const input = asset.input.replace(/\.(ts|js)x?/, ".css")
-          return config.assets.pipeline.getPath(input)
+          return config.assets.pipeline.host.pathname.relative(config.assets.pipeline.getPath(input)).web()
         }
         return removeEntryGroup(name.replace(/\.(ts|js)x?/, ".css"))
       }

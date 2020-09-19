@@ -58,7 +58,7 @@ export function entries(w: Configuration, config: ProjectConfig) {
     .filter(a => ANY_ENTRY_TAG_REGEX.test(a.tag))
     .forEach(asset => {
       let input = "./" + asset.source.path.join(asset.input).web()
-      let output = config.assets.pipeline.getPath(asset.input)
+      let output = pipeline.host.pathname.relative(pipeline.getPath(asset.input)).web()
 
       if (entryJSRegex.test(asset.tag)) {
         entry[output] = input
