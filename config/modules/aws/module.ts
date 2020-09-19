@@ -16,10 +16,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
     }
   },
 
-  onEnvUpdate({ env, aws }) {
-    aws.enabled = !env.server
-  },
-
   onWebpackUpdate({ webpack, aws, assets }) {
     if (aws.enabled) {
       aws.input = assets.pipeline.output.os()

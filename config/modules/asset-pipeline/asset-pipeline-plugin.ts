@@ -1,5 +1,5 @@
 import { compilation, Compiler } from "webpack";
-import { WK } from "../../types";
+import { WK } from "../../workflow/types";
 
 export class AssetPipelinePlugin {
 

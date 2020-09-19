@@ -1,7 +1,7 @@
 import { RuleSetRule } from "webpack"
 import ts from "typescript";
 import { TransformerFactory } from "./transformer";
-import { WK } from "../../types";
+import { WK } from "../../workflow/types";
 
 export const tsRule = (config: WK.ProjectConfig) => {
   return {

@@ -9,7 +9,6 @@ export type Options = {
   ejs: EJSOptions & { imports: Dictionary<any> }
 }
 
-
 export const Hooks: WK.ModuleHooks<Options> = {
 
   options() {

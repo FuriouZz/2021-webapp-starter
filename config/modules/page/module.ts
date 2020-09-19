@@ -1,4 +1,4 @@
-import { WK } from "../../types"
+import { WK } from "../../workflow/types"
 
 export type PageDataFunction = (data: Record<string, any>) => Promise<void>
 

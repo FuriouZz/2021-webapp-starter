@@ -61,8 +61,6 @@ export function entries(w: Configuration, config: ProjectConfig) {
       let output = config.assets.pipeline.getPath(asset.input)
 
       if (entryJSRegex.test(asset.tag)) {
-        asset.source.file.shadow(asset.input.replace(/\.(ts|tsx|js|jsx)/, ".css"))
-        asset.source.file.fetch()
         entry[output] = input
       } else {
         output = `${output}${toEntryGroup(asset.tag)}`

@@ -1,13 +1,13 @@
 import ts from "typescript";
 import { Visitor } from "../../typescript/transformer";
-import { WK } from "../../../types";
+import { WK } from "../../../workflow/types";
 import { FileData } from "../../file-generator/file-generator-plugin";
 import { basename, extname } from "path";
 import { PageDataFunction } from "../../page/module";
+import { resolvePath } from "./utils";
 
 const ASSET_REG = /asset_(url|path|filter)/
 const ASSET_FILTER_REG = /asset_filter/
-const ASSET_URL_REG = /asset_url/
 type AcceptedType = ts.StringLiteral | ts.NoSubstitutionTemplateLiteral
 
 function createLiteral(value: any, factory: ts.NodeFactory) {
@@ -26,8 +26,8 @@ function createLiteral(value: any, factory: ts.NodeFactory) {
 
 export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
   return (node, factory) => {
+
     if (ts.isCallExpression(node) && ASSET_REG.test(node.expression.getText()) && node.arguments.length === 1) {
-      const { pipeline } = config.assets
       const callExpression = node.expression.getText()
       const arg0 = node.arguments[0]
 
@@ -38,40 +38,55 @@ export const transformer: (config: WK.ProjectConfig) => Visitor = (config) => {
       const isStringLiteral = ts.isStringLiteral(arg0) || ts.isNoSubstitutionTemplateLiteral(arg0)
       if (!isStringLiteral) return node
 
+      const filename = node.getSourceFile().fileName
+
       // asset_filter
       if (ASSET_FILTER_REG.test(callExpression)) {
         const match = (arg0 as AcceptedType).text.trim()
         const reg = new RegExp(match)
-        const records: Record<string, { path: string, url: string }> = {}
-        config.assets.pipeline.manifest.export("asset").filter(asset => {
+        const records: ts.ObjectLiteralElementLike[] = []
+
+        config.assets.pipeline.manifest.export("asset_source").forEach(asset => {
           if (reg.test(asset.input)) {
-            records[asset.input] = {
-              path: config.assets.pipeline.getPath(asset.input),
-              url: config.assets.pipeline.getUrl(asset.input),
-            }
+            const expression = createPathNode(asset.input, filename, factory, config)
+            const property = factory.createPropertyAssignment(
+              factory.createStringLiteral(asset.input),
+              expression
+            )
+            records.push(property)
           }
         })
 
-        return createLiteral(records, factory)
+        return factory.createObjectLiteralExpression(records)
       }
 
-      // asset_(path|url)
+      // asset_url
       else {
-        let path = (arg0 as AcceptedType).text.trim()
-        const filename = node.getSourceFile().fileName
-
-        if (ASSET_URL_REG.test(callExpression)) {
-          path = pipeline.getUrl(path, { from: filename })
-        } else {
-          path = pipeline.getPath(path, { from: filename })
-        }
-
-        return factory.createStringLiteral(path, false)
+        const path = (arg0 as AcceptedType).text.trim()
+        return createPathNode(path, filename, factory, config)
       }
     }
 
     return node
   }
+}
+
+function createPathNode(path: string, filename: string, factory: ts.NodeFactory, config: WK.ProjectConfig) {
+  const result = resolvePath(path, filename, config.assets.pipeline)
+
+  if (result.type === "literal") {
+    return factory.createStringLiteral(result.path)
+  }
+
+    const id = factory.createIdentifier("require")
+    const lit = ts.createStringLiteral(result.path)
+    const expression = factory.createCallExpression(id, [], [lit])
+
+    if (config.env.esModule) {
+      return factory.createPropertyAccessExpression(expression, "default")
+    }
+
+    return expression
 }
 
 export function typing(config: WK.ProjectConfig): FileData {
@@ -82,11 +97,10 @@ export function typing(config: WK.ProjectConfig): FileData {
     content() {
       let content = ""
       content += `import { PAGE } from "./${pagePath}"\n`
-      content += `type Asset = { path: string, url: string }\n`
       content += `declare global {\n`
       content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
       content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
-      content += `  export function asset_filter(key: string): Record<string, Asset>\n`
+      content += `  export function asset_filter(key: string): string\n`
       content += `}\n`
       return content
     }

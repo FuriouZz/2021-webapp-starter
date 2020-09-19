@@ -1,0 +1,59 @@
+{
+  "modules": {
+    "asset-pipeline": {
+      "enabled": true,
+      "priority": 10,
+      "path": "asset-pipeline",
+      "devDependencies": {
+        "file-loader": "^6.1.0",
+        "raw-loader": "^4.0.1"
+      }
+    },
+
+    "asset-pipeline-ejs-helpers": {
+      "enabled": true,
+      "priority": -10,
+      "path": "asset-pipeline/submodules/ejs.ts",
+      "require": [ "ejs" ]
+    },
+
+    "asset-pipeline-stylus-helpers": {
+      "enabled": true,
+      "priority": -10,
+      "path": "asset-pipeline/submodules/stylus.ts",
+      "require": [ "stylus" ]
+    },
+
+    "file-generator": {
+      "enabled": true,
+      "priority": 1,
+      "path": "file-generator"
+    },
+
+    "html": {
+      "enabled": true,
+      "priority": 1,
+      "path": "html/module-raw.ts",
+      "devDependencies": {
+        "file-loader": "^6.1.0",
+        "raw-loader": "^4.0.1"
+      }
+    },
+
+    "page": {
+      "enabled": true,
+      "priority": 1,
+      "path": "page"
+    },
+
+    "typescript": {
+      "enabled": true,
+      "priority": 1,
+      "path": "typescript",
+      "devDependencies": {
+        "ts-loader": "8.0.3",
+        "fork-ts-checker-webpack-plugin": "^5.1.0"
+      }
+    }
+  }
+}

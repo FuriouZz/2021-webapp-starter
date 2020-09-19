@@ -35,19 +35,20 @@ export function CreateWebpackConfig<T={}>(user: WK.ModuleHooks<T>): (env: WK.Env
         const cmd = process.argv.join(' ')
         const reg = /webpack-dev-server/
         return reg.test(cmd)
-      })()
+      })(),
+      esModule: false,
     } as WK.EnvConfig, cliEnv)
 
     // Create config object
     Hooks.call("options", project)
 
-    // Update modules options
-    Hooks.call("onModulesUpdate", project)
-    Hooks.call("afterModulesUpdate", project)
-
     // Update env
     Hooks.call("onEnvUpdate", project)
     Hooks.call("afterEnvUpdate", project)
+
+    // Update modules options
+    Hooks.call("onModulesUpdate", project)
+    Hooks.call("afterModulesUpdate", project)
 
     // Update assets
     Hooks.call("onAssetsUpdate", project)
