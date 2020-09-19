@@ -58,7 +58,7 @@ export function getFileRule({ assets, env }: WK.ProjectConfig, opts: FileLoaderO
 
       outputPath(url: string, resourcePath: string, context: string) {
         const asset = assets.pipeline.manifest.getAsset(resourcePath)
-        return asset ? assets.pipeline.getPath(asset.input) : url
+        return asset ? assets.pipeline.host.pathname.relative(assets.pipeline.getPath(asset.input)).web() : url
       },
       publicPath(url: string, resourcePath: string, context: string) {
         const asset = assets.pipeline.manifest.getAsset(resourcePath)

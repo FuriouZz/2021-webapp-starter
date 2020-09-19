@@ -10,7 +10,7 @@ async function main() {
     history: createWebHashHistory()
   })
   app.use(router)
-  app.mount("app")
+  app.mount("#app")
 }
 
 window.addEventListener('DOMContentLoaded', main)
