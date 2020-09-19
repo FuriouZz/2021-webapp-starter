@@ -1,4 +1,4 @@
-import { WK } from "../../types"
+import { WK } from "../../workflow/types"
 import { RuleSetRule, RuleSetUseItem } from "webpack"
 
 // Use this rule to emit files
@@ -57,11 +57,11 @@ export function getFileRule({ assets, env }: WK.ProjectConfig, opts: FileLoaderO
       emitFile: options.emitFile,
 
       outputPath(url: string, resourcePath: string, context: string) {
-        const asset = assets.pipeline.getAsset(resourcePath)
+        const asset = assets.pipeline.manifest.getAsset(resourcePath)
         return asset ? assets.pipeline.getPath(asset.input) : url
       },
       publicPath(url: string, resourcePath: string, context: string) {
-        const asset = assets.pipeline.getAsset(resourcePath)
+        const asset = assets.pipeline.manifest.getAsset(resourcePath)
         return asset ? assets.pipeline.getUrl(asset.input) : url
       },
     }

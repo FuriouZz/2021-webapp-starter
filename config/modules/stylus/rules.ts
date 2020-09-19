@@ -9,6 +9,9 @@ export const stylusRule: (config: WK.ProjectConfig) => RuleSetRule = (config) =>
     use: [
       {
         loader: ExtractCssChunks.loader,
+        options: {
+          esModule: config.env.esModule
+        }
       },
       {
         loader: 'css-loader',

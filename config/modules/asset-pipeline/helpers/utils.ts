@@ -1,7 +1,7 @@
 import { normalize } from "asset-pipeline/js/path";
 import { Pipeline } from "asset-pipeline/js/pipeline";
 import { dirname, relative } from "path";
-import { ANY_ENTRY_TAG_REGEX } from "../../../utils/entry";
+import { ANY_ENTRY_TAG_REGEX } from "../../../workflow/utils/entry";
 
 export type AssetNode = {
   path: string,
@@ -9,7 +9,7 @@ export type AssetNode = {
 }
 
 export function resolvePath(path: string, issuer: string, pipeline: Pipeline): AssetNode {
-  const asset = pipeline.manifest.getWithSource(path)
+  const asset = pipeline.manifest.getAssetWithSource(path)
   if (asset) {
     if (ANY_ENTRY_TAG_REGEX.test(asset.tag) || asset.source.uuid === "__shadow__") {
       path = pipeline.getUrl(asset.input)

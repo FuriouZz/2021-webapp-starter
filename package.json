@@ -6,7 +6,7 @@
     "config": "node config/workflow/bin/ts.js run config/workflow/config.ts",
     "build": "node config/workflow/bin/ts.js run config/workflow/config.ts && webpack --config tmp/build.js",
     "start": "node config/workflow/bin/ts.js run config/workflow/config.ts && webpack-dev-server --config tmp/build.js",
-    "test:dist": "npx http-server dist"
+    "test:public": "npx http-server public"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +19,7 @@
     "@types/stylus": "^0.48.33",
     "@types/webpack": "4.4.34",
     "@types/webpack-dev-server": "3.1.6",
-    "asset-pipeline": "github:wk-js/asset-pipeline#4.0.2",
+    "asset-pipeline": "github:wk-js/asset-pipeline#4.1.1",
     "css-loader": "4.2.2",
     "extract-css-chunks-webpack-plugin": "^4.7.5",
     "extract-loader": "^5.1.0",

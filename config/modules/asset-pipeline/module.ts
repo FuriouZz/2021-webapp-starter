@@ -1,9 +1,9 @@
-import { WK } from "../../types"
-import { pageData, transformer, typing } from "./helpers/require/typescript"
+import { WK } from "../../workflow/types"
+import { pageData, transformer, typing } from "./helpers/typescript"
 import { RuleSetCondition } from "webpack"
 import { rawRule, mjsRule, fileRule } from "./rules";
 import { Pipeline } from "asset-pipeline/js/pipeline"
-import { ANY_ENTRY_REGEX } from "../../utils/entry";
+import { ANY_ENTRY_REGEX } from "../../workflow/utils/entry";
 import { AssetPipelinePlugin } from "./asset-pipeline-plugin";
 
 export type Options = {
@@ -39,10 +39,13 @@ export const Hooks: WK.ModuleHooks<Options> = {
   onModulesUpdate(config) {
     const pipeline = config.assets.pipeline
 
-    pipeline.cache.key = config.assets.hashKey
+    pipeline.cache.saltKey = config.assets.hashKey
 
     // Enable cache-break
     pipeline.cache.enabled = config.env.cache
+
+    console.log(config.env);
+
 
     // Origin
     pipeline.host.setURL(config.env.host)
@@ -63,18 +66,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
     config.typescript.visitors.push(transformer(config as WK.ProjectConfig))
     config.generate.files.push(typing(config as WK.ProjectConfig))
     config.page.datas.push(pageData(config as WK.ProjectConfig))
-
-    // EJS Helpers
-    if (config["ejs"]) {
-      const { ejsHelpers } = require("./helpers/require/ejs");
-      ejsHelpers(config as WK.ProjectConfig)
-    }
-
-    // Stylus helpers
-    if (config["stylus"]) {
-      const { StylusPluginFactory } = require("./helpers/require/stylus")
-      config["stylus"].use.push(StylusPluginFactory(config as WK.ProjectConfig))
-    }
   },
 
   onWebpackUpdate(config) {

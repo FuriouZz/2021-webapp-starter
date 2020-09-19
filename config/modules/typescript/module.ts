@@ -1,4 +1,4 @@
-import { WK } from "../../types";
+import { WK } from "../../workflow/types";
 import { Visitor } from "./transformer";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import { tsRule } from "./rules";

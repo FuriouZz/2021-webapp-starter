@@ -1,5 +1,5 @@
-import { WK } from "../../../../types";
-import { resolvePath } from "../utils";
+import { WK } from "../../../workflow/types";
+import { resolvePath } from "./utils";
 
 export function ejsHelpers(config: WK.ProjectConfig) {
   config["ejs"].helpers.asset_url = function () {

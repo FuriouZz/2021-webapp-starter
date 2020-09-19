@@ -15,6 +15,12 @@
     "workflow/**/*",
     "build.ts",
     "modules/ejs",
-    "modules/stylus"
+    "modules/stylus",
+    "modules/file-generator",
+    "modules/html",
+    "modules/page",
+    "modules/typescript",
+    "modules/asset-pipeline",
+    "modules/asset-pipeline/submodules"
   ]
 }

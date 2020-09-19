@@ -1,10 +1,9 @@
 import { Configuration } from "webpack";
-import { ModuleOptions as CustomOptions } from "../modules/modules"
-import { ModuleOptions as DefaultOptions } from "./modules/modules";
+import { ModuleOptions } from "../modules/modules"
 
 export namespace WK {
 
-  export type ModuleConfig = DefaultOptions & CustomOptions
+  export type ModuleConfig = ModuleOptions
 
   export type EnvConfig = {
     target: string

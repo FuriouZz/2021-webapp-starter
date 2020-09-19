@@ -1,23 +1,10 @@
 import { RuleSetRule, RuleSetUseItem } from "webpack"
-import { WK } from "../../types"
+import { WK } from "../../workflow/types"
 import { getFileRule } from "../asset-pipeline/rules"
 
-export const htmlEmitRule = (config: WK.ProjectConfig) => {
-  if (config.html.resolveURLs) {
-    return htmlResolveRules(config)
-  }
-  return htmlRawRules(config)
-}
-
-const htmlRawRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
+export const htmlRawRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
   const { assets, webpack } = config
   const HTML_ENTRY_REGEX = /entry:html$/
-
-  const loaders: RuleSetUseItem[] = []
-
-  if (config.html.resolveURLs) {
-    loaders.push(getHTMLLoaderRule(config))
-  }
 
   return {
     test: /\.html(\.ejs)?$/i,
@@ -26,7 +13,7 @@ const htmlRawRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
       // Export file with entry:html tags
       {
         test(resourcePath) {
-          const asset = assets.pipeline.getAsset(resourcePath)
+          const asset = assets.pipeline.manifest.getAsset(resourcePath)
           return !!asset && HTML_ENTRY_REGEX.test(asset.tag)
         },
         use: [
@@ -44,15 +31,9 @@ const htmlRawRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
   } as RuleSetRule
 }
 
-const htmlResolveRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
-  const { assets, webpack } = config
+export const htmlResolveRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => {
+  const { assets, webpack, env } = config
   const HTML_ENTRY_REGEX = /entry:html$/
-
-  const loaders: RuleSetUseItem[] = []
-
-  if (config.html.resolveURLs) {
-    loaders.push(getHTMLLoaderRule(config))
-  }
 
   return {
     test: /\.html(\.ejs)?$/i,
@@ -61,7 +42,7 @@ const htmlResolveRules: (config: WK.ProjectConfig) => RuleSetRule = (config) => 
       // Export file with entry:html tags
       {
         test(resourcePath) {
-          const asset = assets.pipeline.getAsset(resourcePath)
+          const asset = assets.pipeline.manifest.getAsset(resourcePath)
           return !!asset && HTML_ENTRY_REGEX.test(asset.tag)
         },
         use: [

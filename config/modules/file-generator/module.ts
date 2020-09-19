@@ -1,4 +1,4 @@
-import { WK } from "../../types"
+import { WK } from "../../workflow/types"
 import { FileGeneratorPlugin, FileData } from "./file-generator-plugin"
 
 export type Options = {

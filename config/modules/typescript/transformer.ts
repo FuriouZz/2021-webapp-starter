@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { WK } from "../../types";
+import { WK } from "../../workflow/types";
 
 export type Visitor = (node: ts.Node, factory: ts.NodeFactory) => ts.Node
 

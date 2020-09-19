@@ -1,4 +1,4 @@
-import { WK } from "../../types";
+import { WK } from "../../workflow/types";
 import webpack from "webpack";
 import { writeFile } from "lol/js/node/fs";
 import { join, isAbsolute } from "path";

@@ -1,15 +1,13 @@
 import ts from "typescript";
-import { Visitor } from "../../../typescript/transformer";
-import { WK } from "../../../../types";
-import { FileData } from "../../../file-generator/file-generator-plugin";
-import { basename, dirname, extname, relative } from "path";
-import { PageDataFunction } from "../../../page/module";
-import { IAssetWithSource } from "asset-pipeline/js/types";
-import { resolvePath } from "../utils";
+import { Visitor } from "../../typescript/transformer";
+import { WK } from "../../../workflow/types";
+import { FileData } from "../../file-generator/file-generator-plugin";
+import { basename, extname } from "path";
+import { PageDataFunction } from "../../page/module";
+import { resolvePath } from "./utils";
 
 const ASSET_REG = /asset_(url|path|filter)/
 const ASSET_FILTER_REG = /asset_filter/
-const ASSET_URL_REG = /asset_url/
 type AcceptedType = ts.StringLiteral | ts.NoSubstitutionTemplateLiteral
 
 function createLiteral(value: any, factory: ts.NodeFactory) {

@@ -1,7 +1,6 @@
-import { dirname, relative } from "path";
 import stylus from "stylus";
-import { WK } from "../../../../types";
-import { resolvePath } from "../utils";
+import { WK } from "../../../workflow/types";
+import { resolvePath } from "./utils";
 
 export function StylusPluginFactory(config: WK.ProjectConfig) {
   const nodes = stylus.nodes
