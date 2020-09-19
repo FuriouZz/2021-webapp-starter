@@ -44,9 +44,6 @@ export const Hooks: WK.ModuleHooks<Options> = {
     // Enable cache-break
     pipeline.cache.enabled = config.env.cache
 
-    console.log(config.env);
-
-
     // Origin
     pipeline.host.setURL(config.env.host)
 
