@@ -58,7 +58,7 @@ export function entries(w: Configuration, config: ProjectConfig) {
     .filter(a => ANY_ENTRY_TAG_REGEX.test(a.tag))
     .forEach(asset => {
       let input = "./" + asset.source.path.join(asset.input).web()
-      let output = config.assets.pipeline.getPath(asset.input)
+      let output = pipeline.host.pathname.relative(config.assets.pipeline.getPath(asset.input)).web()
 
       if (entryJSRegex.test(asset.tag)) {
         entry[output] = input
@@ -80,7 +80,9 @@ export function output(w: Configuration, config: ProjectConfig) {
   w.output.path = pipeline.cwd.join(pipeline.output.os()).os()
   w.output.filename = '[name]'
   w.output.chunkFilename = '[name].chunk.js'
-  w.output.publicPath = pipeline.host.toString()
+  // w.output.publicPath = pipeline.host.toString()
+  console.log(pipeline.host.toString());
+
 }
 
 /**
