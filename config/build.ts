@@ -7,12 +7,16 @@ export default CreateWebpackConfig({
     env.cache = env.cache || !env.server
   },
 
-  onModulesUpdate({ typescript, stylus }) {
+  onModulesUpdate({ typescript, stylus, preRenderSPA, env }) {
     // Enable fast build alongside with ts-checker-plugin
     typescript.build = "fast"
 
     // Enable modules from css-loader (Documentation here: https://github.com/webpack-contrib/css-loader#modules)
     stylus.modules = true
+
+    // Pre render routes
+    preRenderSPA.enabled = !env.server
+    preRenderSPA.routes.push("/", "/hello", "/hola")
   },
 
   onAssetsUpdate(config) {
@@ -60,9 +64,14 @@ export default CreateWebpackConfig({
     // if (!config.env.server) assets.fs.copy("**/*")
   },
 
-  onWebpackUpdate({ webpack }) {
+  onWebpackUpdate({ webpack, env }) {
     // Enable alias from app/scripts
     webpack.resolve.modules.push('app/scripts')
+
+    if (env.server) {
+      // Enable redirection for history support
+      webpack.devServer.historyApiFallback = true
+    }
   },
 
 })

@@ -7,7 +7,8 @@ import { Options as TypescriptOptions, Hooks as TypescriptHooks } from "./typesc
 import { Options as EjsOptions, Hooks as EjsHooks } from "./ejs/module";
 import { Options as StylusOptions, Hooks as StylusHooks } from "./stylus/module";
 import { Options as VueOptions, Hooks as VueHooks } from "./vue/module";
+import { Options as PreRenderSpaOptions, Hooks as PreRenderSpaHooks } from "./pre-render-spa/module";
 import { Options as AssetPipelineEjsHelpersOptions, Hooks as AssetPipelineEjsHelpersHooks } from "./asset-pipeline/submodules/ejs";
 import { Options as AssetPipelineStylusHelpersOptions, Hooks as AssetPipelineStylusHelpersHooks } from "./asset-pipeline/submodules/stylus";
-export type ModuleOptions = AssetPipelineOptions & FileGeneratorOptions & HtmlOptions & PageOptions & TypescriptOptions & EjsOptions & StylusOptions & VueOptions & AssetPipelineEjsHelpersOptions & AssetPipelineStylusHelpersOptions
-export const ModuleHooks = [AssetPipelineHooks, FileGeneratorHooks, HtmlHooks, PageHooks, TypescriptHooks, EjsHooks, StylusHooks, VueHooks, AssetPipelineEjsHelpersHooks, AssetPipelineStylusHelpersHooks]
+export type ModuleOptions = AssetPipelineOptions & FileGeneratorOptions & HtmlOptions & PageOptions & TypescriptOptions & EjsOptions & StylusOptions & VueOptions & PreRenderSpaOptions & AssetPipelineEjsHelpersOptions & AssetPipelineStylusHelpersOptions
+export const ModuleHooks = [AssetPipelineHooks, FileGeneratorHooks, HtmlHooks, PageHooks, TypescriptHooks, EjsHooks, StylusHooks, VueHooks, PreRenderSpaHooks, AssetPipelineEjsHelpersHooks, AssetPipelineStylusHelpersHooks]
