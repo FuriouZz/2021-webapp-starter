@@ -1,29 +1,32 @@
 import { WK } from "../../workflow/types"
 import { RuleSetRule, RuleSetUseItem } from "webpack"
-
-// Use this rule to emit files
-export const fileRule = (config: WK.ProjectConfig) => {
-  return {
-    test: config.assets.rules.file,
-    include: config.webpack.context,
-    use: [
-      getFileRule(config)
-    ]
-  } as RuleSetRule
-}
+import { ANY_ENTRY_TAG_REGEX } from "../../workflow/utils/entry"
 
 // Use raw loader for every text files
-export const rawRule = ({ assets, webpack, env }: WK.ProjectConfig) => {
+export const assetRule = (config: WK.ProjectConfig) => {
+  const { assets, webpack, env } = config
   return {
-    test: assets.rules.raw,
     include: webpack.context,
-    use: [
+    oneOf: [
       {
         loader: "raw-loader",
+        test: assets.requireText,
+        issuer: /\.(t|j)sx?$/,
         options: {
           // Toggle ES module
           esModule: env.esModule,
         }
+      },
+
+      {
+        test(resourcePath: string) {
+          const asset = assets.pipeline.manifest.getAsset(resourcePath)
+          return asset && !ANY_ENTRY_TAG_REGEX.test(asset.tag)
+        },
+        include: webpack.context,
+        use: [
+          getFileRule(config)
+        ]
       }
     ]
   } as RuleSetRule
