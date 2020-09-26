@@ -100,7 +100,7 @@ export function typing(config: WK.ProjectConfig): FileData {
       content += `declare global {\n`
       content += `  export function asset_path(key: keyof typeof PAGE["assets"]): string\n`
       content += `  export function asset_url(key: keyof typeof PAGE["assets"]): string\n`
-      content += `  export function asset_filter(key: string): string\n`
+      content += `  export function asset_filter(key: string): Record<string, string>\n`
       content += `}\n`
       return content
     }
