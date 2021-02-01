@@ -1,0 +1,22 @@
+{
+  "name": "2021-webapp-starter",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "config": "cd config/wk && npm run postinstall && cd ../../ && wk config/build.ts",
+    "task": "wk config/tasks.ts --run=true",
+    "build": "npm run config && node tmp/build.js",
+    "watch": "npm run config && node tmp/build.js --env.watch",
+    "start": "npm run config && node tmp/build.js --env.server --env.watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "animejs": "^3.2.0",
+    "lol": "github:wk-js/lol.js#0.0.19",
+    "ogl": "0.0.61"
+  },
+  "devDependencies": {
+    "wk": "file:config/wk"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "rootDir": "./",
+    "outDir": "../tmp",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "downlevelIteration": true
+  }
+}
