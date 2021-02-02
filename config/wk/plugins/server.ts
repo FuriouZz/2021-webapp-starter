@@ -3,6 +3,46 @@ import { dirname } from "path";
 import { Plugin } from "../types";
 import { getCertificate } from "../lib/server";
 import * as https from "https";
+import { NC } from "../lib/notification-center";
+
+async function livereload(app) {
+  const { Server } = (await import("ws")).default
+  const port = 3001
+  const server = new Server({ port })
+  console.log(`[server] Web socket: ws://localhost:${port}`)
+  console.log(`[server] Do not forget to add <script src="/livereload.js"></script>`)
+
+  server.on("connection", ws => {
+    ws.send(JSON.stringify({ event: "connected" }))
+    NC.once("compiled", () => {
+      ws.send(JSON.stringify({ event: "reload" }))
+    })
+  })
+
+  app.get("/livereload.js", (req, res, next) => {
+    const response = `(()=>{
+      const socket = new WebSocket('ws://localhost:${port}');
+      socket.addEventListener('open', function (event) {
+        socket.send('Hello Server!');
+      });
+      socket.addEventListener('message', function (e) {
+        const { event } = JSON.parse(e.data)
+        switch (event) {
+          case "connected": {
+            console.log("[livereload] connected")
+            break
+          }
+          case "reload": {
+            console.log("[livereload] Start reloading...")
+            window.location.reload()
+            break
+          }
+        }
+      });
+    })()`
+    res.contentType("application/javascript").send(response)
+  })
+}
 
 export = <Plugin>{
   name: "server",
@@ -57,7 +97,9 @@ export = <Plugin>{
       } else {
         app.listen(port)
       }
-      console.log(`Run server at port ${protocol}://localhost:${port}`)
+      console.log(`[server] Web server: ${protocol}://localhost:${port}`)
+
+      await livereload(app)
     })
   }
 }

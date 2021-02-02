@@ -27,11 +27,12 @@
     "ftp": "^0.3.10",
     "js-yaml": "3.13.1",
     "jszip": "^3.5.0",
+    "kramed": "^0.5.6",
     "lodash.template": "4.5.0",
+    "lol": "github:wk-js/lol.js#0.0.19",
     "selfsigned": "^1.10.8",
     "stylus": "^0.54.8",
     "typescript": "4.0.2",
-    "kramed": "^0.5.6",
-    "lol": "github:wk-js/lol.js#0.0.19"
+    "ws": "^7.4.2"
   }
 }

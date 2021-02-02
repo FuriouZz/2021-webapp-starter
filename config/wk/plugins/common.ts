@@ -1,4 +1,3 @@
-import { join, dirname, basename, relative } from "path";
 import { NC } from "../lib/notification-center";
 import { Plugin } from "../types";
 
@@ -8,64 +7,6 @@ export = <Plugin>{
 
   setup(config) {
     const { runner: r } = config
-
-    /**
-     * Create aws
-     */
-    r.task("deploy:aws", async () => {
-      const options = config.options.deploy
-      const { deploy } = await import("../lib/aws")
-      const input = config.pipeline.output.join(config.pipeline.host.pathname.os()).os()
-      await deploy({
-        input,
-        ...options.aws
-      })
-    })
-
-    /**
-     * Create ftp
-     */
-    r.task("deploy:ftp", async () => {
-      const options = config.options.deploy
-      const pipeline = config.pipeline
-      const input = pipeline.output.join(pipeline.host.pathname.os()).os()
-      const output = options.ftp.output
-
-      const exclude = options.exclude.slice(0)
-      const include = options.include.slice(0)
-
-      const { upload } = await import("../lib/ftp")
-      return upload({
-        input,
-        output,
-        include,
-        exclude,
-      })
-    })
-
-    /**
-     * Create zip
-     */
-    r.task("deploy:zip", async () => {
-      const options = config.options.deploy
-
-      const pipeline = config.pipeline
-      const input = pipeline.output.join(pipeline.host.pathname.os()).os()
-      const output = join(dirname(input), basename(input) + '.zip')
-
-      const exclude = options.exclude.slice(0)
-      exclude.push(relative(input, output))
-
-      const include = options.include.slice(0)
-
-      const { zip } = await import("../lib/zip")
-      return zip({
-        input,
-        output,
-        include,
-        exclude,
-      })
-    })
 
     /**
      * Read .env or .env.${target} files and merge environment options
@@ -103,30 +44,6 @@ export = <Plugin>{
       await load(options)
     })
 
-    r.task("page-data:generate", async () => {
-      const { options } = config
-      const { generatePageData, } = await import("../lib/page-data")
-      options.generate.files.push({
-        filename: "app/scripts/generated/PAGE.ts",
-        write: true,
-        content: () => generatePageData(options.pageData.datas)
-      })
-    })
-
-    r.task("page-data:ejs", () => {
-      const { options } = config
-      options.pageData.datas.push((data) => {
-        data["ejs"] = options.ejs.data
-      })
-    })
-
-    r.task("page-data:i18n", () => {
-      const { options } = config
-      options.pageData.datas.push((data) => {
-        data["i18n"] = options.i18n.locales
-      })
-    })
-
     r.task("generate", async () => {
       const { FileCreator } = await import("../lib/file-creator")
       const f = new FileCreator(config.options.generate)
@@ -140,11 +57,6 @@ export = <Plugin>{
     r.group("env")
       .pushBack("env:load")
       .pushBack("target:load")
-
-    r.group("page-data")
-      .pushBack("page-data:generate")
-      .pushBack("page-data:ejs")
-      .pushBack("page-data:i18n")
   }
 
 }

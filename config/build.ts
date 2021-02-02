@@ -33,12 +33,11 @@ export default CreateBuildConfig(async config => {
     tag: "entry"
   })
 
-  options.pageData.datas.push(data => {
-    data["mesage"] = { hello: "world" }
-  })
-
   const lastmod = new Date().toISOString()
   options.ejs.data.title = "Hello"
+  options.ejs.data.env = {
+    target: options.env.target
+  }
   options.ejs.data.sitemap = [
     { loc: pipeline.host.join("/").toString(), priority: "1.0", lastmod },
   ]

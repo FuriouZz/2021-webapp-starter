@@ -6,8 +6,9 @@ export = <Plugin>{
 
   setup(config) {
     const { runner: r } = config
+
     /**
-     * Fetch assets
+     * Prepare asset pipeline
      */
     r.task("asset:setup", () => {
       const { pipeline, options } = config
@@ -15,6 +16,7 @@ export = <Plugin>{
       pipeline.cache.enabled = options.env.cache
       pipeline.host.setURL(options.env.host)
       pipeline.manifest.readOnDisk = false
+      pipeline.manifest.saveOnDisk = false
       pipeline.output.set(options.env.output)
 
       options.pageData.datas.push((data) => {
@@ -40,6 +42,7 @@ export = <Plugin>{
     r.task("asset:copy", async () => {
       await config.pipeline.copy()
     })
+
     /**
      * Add EJS helpers
      */

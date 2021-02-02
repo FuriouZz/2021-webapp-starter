@@ -8,6 +8,8 @@ export async function CreateBuildConfig(setup: (config: Config) => any | Promise
   await import("./plugins/asset").then(c.plugin)
   await import("./plugins/build").then(c.plugin)
   await import("./plugins/server").then(c.plugin)
+  await import("./plugins/deploy").then(c.plugin)
+  await import("./plugins/page-data").then(c.plugin)
 
   await c.execute("env")
 
